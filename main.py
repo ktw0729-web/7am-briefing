@@ -27,6 +27,14 @@ def split_caption(text: str, limit: int = 70) -> list[str]:
             merged.append(c)
     return merged
 
+def split_paragraphs(text: str, per: int = 2) -> list[str]:
+    """나레이션을 단락 리스트로. 단락 구분이 없으면 문장 2개씩 묶는다."""
+    paras = [p.strip() for p in re.split(r"\n\s*\n|\n", text.strip()) if p.strip()]
+    if len(paras) <= 1:
+        sents = [x for x in re.split(r"(?<=[.!?。])\s+", text.strip()) if x]
+        paras = [" ".join(sents[i:i + per]) for i in range(0, len(sents), per)] or [text.strip()]
+    return paras
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
@@ -49,20 +57,24 @@ def main():
     issues = data["issues"]
     total = len(issues)
 
-    # 슬라이드 정의: (종류, 음성 문장 목록, 화면 표시 문장 목록, 이슈, 번호, 사진목록)
-    slides = [("intro", split_caption(data["intro"]), [], None, 0, [])]
+    # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
+    slides = [("intro", [(c, False) for c in split_caption(data["intro"])], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
         photos = images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
-        body = split_caption(x["narration"])
-        slides.append(("issue", [f"{i}번. {x['title']}."] + body, body, x, i, photos))
-    slides.append(("outro", split_caption(data["outro"]), [], None, 99, []))
+        spoken, shown = [(f"{i}번. {x['title']}.", True)], []
+        for pi, para in enumerate(split_paragraphs(x["narration"])):
+            chunks = split_caption(para)
+            for ci, c in enumerate(chunks):
+                spoken.append((c, ci == len(chunks) - 1)); shown.append((c, pi))
+        slides.append(("issue", spoken, shown, x, i, photos))
+    slides.append(("outro", [(c, False) for c in split_caption(data["outro"])], [], None, 99, []))
     used_photo = any(s[5] for s in slides)
     cardnews.build(f"{out}/cardnews", date_str, issues, {s[4]: s[5] for s in slides if s[0] == "issue"},
                    images.provider() if used_photo else "")
 
     clips, n = [], 0
     for kind, spoken, shown, issue, idx, photos in slides:
-        for ci, cap in enumerate(spoken):
+        for ci, (cap, para_end) in enumerate(spoken):
             png, mp3, mp4 = f"{out}/f{n:03d}.png", f"{out}/a{n:03d}.mp3", f"{out}/c{n:03d}.mp4"
             if kind == "issue":
                 photo = photos[ci % len(photos)] if photos else None
@@ -73,7 +85,7 @@ def main():
                 sub = f"오늘의 핵심 이슈 {total}개" if kind == "intro" else "시청해 주셔서 감사합니다"
                 cards.title_frame(png, date_str, sub, cap)
             tts.speak(cap, mp3)
-            video.clip(png, mp3, mp4, pad=0.5 if ci == len(spoken) - 1 else 0.15)
+            video.clip(png, mp3, mp4, pad=0.5 if (ci == len(spoken) - 1 or (kind == 'issue' and para_end)) else 0.15)
             clips.append(os.path.abspath(mp4)); n += 1
     final = f"{out}/news_{today.strftime('%Y%m%d')}.mp4"
     video.concat(clips, os.path.abspath(final), os.path.abspath(f"{out}/list.txt"))

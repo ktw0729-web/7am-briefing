@@ -71,25 +71,34 @@ def _caption(img, text):
 NARR_BOX = (100, 735, 1820, 1005)   # 기사 본문(나레이션) 영역: 왼쪽 정렬, 한 페이지에 전부 표시
 
 def _fit_text(d, units, cur):
-    """units(문장 목록)를 박스 안에 전부 들어가도록 글자 크기를 줄여가며 배치하고, 현재 문장만 강조."""
+    """units: [(문장, 단락번호)]. 단락마다 줄을 바꾸고 단락 사이를 띄워, 박스 안에 전부 들어가도록 글자 크기를 조절.
+    현재 읽는 문장(cur)만 강조."""
     x0, y0, x1, y1 = NARR_BOX
-    tokens = [(w, k) for k, u in enumerate(units) for w in u.split(" ") if w]
-    for size in range(46, 23, -2):
-        f, lh = _font(size, False), int(size * 1.4)
-        lines, cur_line, cur_w = [], [], 0
+    units = [(u, 0) if isinstance(u, str) else u for u in units]
+    tokens = [(w, k, para) for k, (u, para) in enumerate(units) for w in u.split(" ") if w]
+    for size in range(44, 21, -2):
+        f, lh = _font(size, False), int(size * 1.35)
+        gap = int(size * 0.8)
         sp = d.textlength(" ", font=f)
-        for w, k in tokens:
+        lines, cur_line, cur_w, last_para = [], [], 0, None   # lines: (토큰목록, 단락시작여부)
+        for w, k, para in tokens:
+            new_para = para != last_para
             ww = d.textlength(w, font=f)
-            if cur_line and cur_w + sp + ww > x1 - x0:
-                lines.append(cur_line); cur_line, cur_w = [], 0
+            if cur_line and (new_para or cur_w + sp + ww > x1 - x0):
+                lines.append((cur_line, cur_start)); cur_line, cur_w = [], 0
+            if not cur_line:
+                cur_start = new_para and last_para is not None
             cur_w += (sp if cur_line else 0) + ww
-            cur_line.append((w, k))
+            cur_line.append((w, k)); last_para = para
         if cur_line:
-            lines.append(cur_line)
-        if len(lines) * lh <= y1 - y0:
+            lines.append((cur_line, cur_start))
+        height = len(lines) * lh + gap * sum(1 for _, st in lines if st)
+        if height <= y1 - y0:
             break
     y = y0
-    for line in lines:
+    for line, starts_para in lines:
+        if starts_para:
+            y += gap
         x = x0
         for w, k in line:
             on = (k == cur)
