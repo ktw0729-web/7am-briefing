@@ -1,11 +1,25 @@
-"""매일 아침 실행: 뉴스 수집 → 요약 → 카드 → 나레이션 영상 → (Threads / YouTube)
+"""매일 아침 실행: 뉴스 수집 → 요약 → 자막+이미지 영상 → (Threads / YouTube)
 사용:  python main.py --dry-run        # 게시·업로드 없이 영상까지만
-       python main.py --sample         # API 없이 샘플 데이터로 테스트
+       python main.py --sample         # 뉴스/Claude 없이 샘플 데이터로 테스트
 """
-import argparse, datetime as dt, json, os, sys
+import argparse, datetime as dt, json, os, re, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
-import cards, tts, video
+import cards, tts, video, images
+
+def split_caption(text: str, limit: int = 48) -> list[str]:
+    """나레이션을 자막 단위(문장, 길면 쉼표/공백에서 분할)로 쪼갠다."""
+    out = []
+    for sent in re.split(r"(?<=[.!?。])\s+", text.strip()):
+        sent = sent.strip()
+        while len(sent) > limit:
+            cut = max(sent.rfind(", ", 0, limit), sent.rfind(" ", 0, limit))
+            if cut < 15:
+                cut = limit
+            out.append(sent[:cut + 1].strip()); sent = sent[cut + 1:].strip()
+        if sent:
+            out.append(sent)
+    return out
 
 def main():
     ap = argparse.ArgumentParser()
@@ -27,27 +41,33 @@ def main():
         data = summarize(fetch())
     json.dump(data, open(f"{out}/issues.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     issues = data["issues"]
+    total = len(issues)
 
-    # 슬라이드: 인트로 + 이슈들 + 아웃트로
-    slides = [("intro", data["intro"])]
-    cards.title_card(f"{out}/s00.png", "", date_str, f"오늘의 핵심 이슈 {len(issues)}개")
-    imgs = [f"{out}/s00.png"]
+    # 슬라이드 정의: (종류, 나레이션, 이슈, 번호, 사진목록)
+    slides = [("intro", data["intro"], None, 0, [])]
     for i, x in enumerate(issues, 1):
-        cards.issue_card(f"{out}/s{i:02d}.png", i, len(issues), x, date_str)
-        imgs.append(f"{out}/s{i:02d}.png")
-        slides.append((f"issue{i}", f"{i}번. {x['title']}. {x['narration']}"))
-    cards.title_card(f"{out}/s99.png", "", date_str, "시청해 주셔서 감사합니다")
-    imgs.append(f"{out}/s99.png"); slides.append(("outro", data["outro"]))
+        photos = images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
+        slides.append(("issue", f"{i}번. {x['title']}. {x['narration']}", x, i, photos))
+    slides.append(("outro", data["outro"], None, 99, []))
+    used_photo = any(s[4] for s in slides)
 
-    clips = []
-    for k, ((name, text), img) in enumerate(zip(slides, imgs)):
-        mp3, mp4 = f"{out}/{k:02d}.mp3", f"{out}/{k:02d}.mp4"
-        tts.speak(text, mp3)
-        video.clip(img, mp3, mp4)
-        clips.append(os.path.abspath(mp4))
+    clips, n = [], 0
+    for kind, text, issue, idx, photos in slides:
+        chunks = split_caption(text)
+        for ci, cap in enumerate(chunks):
+            png, mp3, mp4 = f"{out}/f{n:03d}.png", f"{out}/a{n:03d}.mp3", f"{out}/c{n:03d}.mp4"
+            if kind == "issue":
+                photo = photos[ci % len(photos)] if photos else None
+                cards.issue_frame(png, idx, total, issue, date_str, cap, photo, photo_credit=used_photo)
+            else:
+                sub = f"오늘의 핵심 이슈 {total}개" if kind == "intro" else "시청해 주셔서 감사합니다"
+                cards.title_frame(png, date_str, sub, cap)
+            tts.speak(cap, mp3)
+            video.clip(png, mp3, mp4, pad=0.5 if ci == len(chunks) - 1 else 0.15)
+            clips.append(os.path.abspath(mp4)); n += 1
     final = f"{out}/news_{today.strftime('%Y%m%d')}.mp4"
     video.concat(clips, os.path.abspath(final), os.path.abspath(f"{out}/list.txt"))
-    print("영상 생성:", final)
+    print("영상 생성:", final, f"(자막 {n}컷)")
     if a.dry_run:
         return
 
@@ -59,7 +79,9 @@ def main():
         desc = f"{date_str} 7시 브리핑\n\n" + "\n".join(
             f"{i}. [{x['category']}] {x['title']} - {x['subtitle']}" for i, x in enumerate(issues, 1))
         desc += "\n\n※ 언론 보도를 AI로 요약·재구성한 영상입니다."
-        print("YouTube:", upload(final, f"[{date_str}] 7시 브리핑 - 분야별 핵심 이슈 {len(issues)}", desc,
+        if used_photo:
+            desc += "\n사진 출처: Pexels (https://www.pexels.com)"
+        print("YouTube:", upload(final, f"[{date_str}] 7시 브리핑 - 분야별 핵심 이슈 {total}", desc,
                                  os.getenv("YT_PRIVACY", "private")))
 
 if __name__ == "__main__":

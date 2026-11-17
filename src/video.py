@@ -6,7 +6,7 @@ def _dur(audio):
                         "-of", "default=nw=1:nk=1", audio], capture_output=True, text=True, check=True)
     return float(r.stdout.strip())
 
-def clip(image, audio, out, pad=0.6):
+def clip(image, audio, out, pad=0.2):
     d = _dur(audio) + pad
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", image, "-i", audio,
                     "-t", f"{d:.2f}", "-af", f"apad=pad_dur={pad}", "-c:v", "libx264", "-preset", "veryfast",

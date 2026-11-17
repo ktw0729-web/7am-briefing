@@ -1,50 +1,104 @@
-"""이슈 카드 이미지(1920x1080) 생성."""
-import glob, textwrap
+"""영상 프레임(1920x1080) 생성: 왼쪽 제목/부제, 오른쪽 이미지, 하단 자막."""
+import glob
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 1920, 1080
 COLORS = {"경제": "#E8590C", "산업": "#1971C2", "국제": "#2F9E44", "기술": "#7048E8", "사회": "#C2255C"}
+PANEL = (1130, 150, 1830, 700)           # 오른쪽 이미지 영역 (700x550)
+_cache = {}
 
 def _font(size, bold=False):
-    cands = glob.glob("/usr/share/fonts/**/NotoSansCJK-*.ttc", recursive=True) + \
-            glob.glob("/usr/share/fonts/**/NanumGothic*.ttf", recursive=True) + \
-            glob.glob("C:/Windows/Fonts/malgun*.ttf") + glob.glob("/System/Library/Fonts/AppleSDGothicNeo*")
-    pick = [c for c in cands if ("Bold" in c) == bold] or cands
-    return ImageFont.truetype(pick[0], size)
+    k = (size, bold)
+    if k not in _cache:
+        cands = glob.glob("/usr/share/fonts/**/NotoSansCJK-*.ttc", recursive=True) + \
+                glob.glob("/usr/share/fonts/**/NanumGothic*.ttf", recursive=True) + \
+                glob.glob("C:/Windows/Fonts/malgun*.ttf") + glob.glob("/System/Library/Fonts/AppleSDGothicNeo*")
+        pick = [c for c in cands if ("Bold" in c) == bold] or cands
+        _cache[k] = ImageFont.truetype(pick[0], size)
+    return _cache[k]
 
 def _wrap(draw, text, font, width):
+    """단어(띄어쓰기) 단위로 줄바꿈, 한 단어가 너무 길면 글자 단위로."""
     lines, cur = [], ""
-    for ch in text:
-        if draw.textlength(cur + ch, font=font) > width:
-            lines.append(cur); cur = ch
-        else:
-            cur += ch
+    for word in text.split(" "):
+        trial = f"{cur} {word}".strip()
+        if draw.textlength(trial, font=font) <= width:
+            cur = trial
+            continue
+        if cur:
+            lines.append(cur); cur = ""
+        for ch in word:
+            if draw.textlength(cur + ch, font=font) > width:
+                lines.append(cur); cur = ch
+            else:
+                cur += ch
     return lines + ([cur] if cur else [])
 
-def issue_card(path, idx, total, issue, date_str):
+def _cover(im, w, h):
+    s = max(w / im.width, h / im.height)
+    im = im.resize((int(im.width * s) + 1, int(im.height * s) + 1))
+    l, t = (im.width - w) // 2, (im.height - h) // 2
+    return im.crop((l, t, l + w, t + h))
+
+def _paste_panel(img, photo, color):
+    x0, y0, x1, y1 = PANEL
+    w, h = x1 - x0, y1 - y0
+    if photo:
+        pic = _cover(Image.open(photo).convert("RGB"), w, h)
+    else:  # 사진이 없을 때: 분야 색상의 추상 일러스트
+        pic = Image.new("RGB", (w, h), color)
+        d = ImageDraw.Draw(pic, "RGBA")
+        d.ellipse([w * 0.45, -h * 0.25, w * 1.3, h * 0.6], fill=(255, 255, 255, 40))
+        d.ellipse([-w * 0.2, h * 0.5, w * 0.5, h * 1.3], fill=(0, 0, 0, 45))
+        d.ellipse([w * 0.3, h * 0.3, w * 0.75, h * 0.8], fill=(255, 255, 255, 30))
+    mask = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(mask).rounded_rectangle([0, 0, w, h], 36, fill=255)
+    img.paste(pic, (x0, y0), mask)
+
+def _caption(img, text):
+    if not text:
+        return
+    ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    od = ImageDraw.Draw(ov)
+    od.rounded_rectangle([90, 790, W - 90, 1000], 28, fill=(0, 0, 0, 175))
+    img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
+    d = ImageDraw.Draw(img)
+    f = _font(56, True)
+    lines = _wrap(d, text, f, W - 260)[:2]
+    y = 895 - 36 * len(lines)
+    for ln in lines:
+        d.text((W // 2, y), ln, font=f, fill="white", anchor="mt"); y += 76
+
+def issue_frame(path, idx, total, issue, date_str, caption="", photo=None, photo_credit=False):
     img = Image.new("RGB", (W, H), "#101418")
     d = ImageDraw.Draw(img)
     color = COLORS.get(issue["category"], "#555")
     d.rectangle([0, 0, 24, H], fill=color)
     d.text((100, 80), f"{date_str}  ·  7시 브리핑  {idx}/{total}", font=_font(40), fill="#8B949E")
-    d.rounded_rectangle([100, 190, 100 + 60 + 52 * len(issue["category"]), 270], 40, fill=color)
-    d.text((130, 200), issue["category"], font=_font(48, True), fill="white")
-    y = 330
-    for ln in _wrap(d, issue["title"], _font(96, True), W - 260):
-        d.text((100, y), ln, font=_font(96, True), fill="white"); y += 120
-    y += 30
-    for ln in _wrap(d, issue["subtitle"], _font(54), W - 260):
-        d.text((100, y), ln, font=_font(54), fill="#C9D1D9"); y += 76
-    src = ", ".join(issue.get("sources", []))[:60]
+    pw = int(d.textlength(issue["category"], font=_font(48, True))) + 70
+    d.rounded_rectangle([100, 170, 100 + pw, 250], 40, fill=color)
+    d.text((100 + pw // 2, 210), issue["category"], font=_font(48, True), fill="white", anchor="mm")
+    y = 290
+    for ln in _wrap(d, issue["title"], _font(80, True), 960)[:3]:
+        d.text((100, y), ln, font=_font(80, True), fill="white"); y += 100
+    y += 20
+    for ln in _wrap(d, issue["subtitle"], _font(44), 960)[:2]:
+        d.text((100, y), ln, font=_font(44), fill="#C9D1D9"); y += 62
+    _paste_panel(img, photo, color)
+    _caption(img, caption)
+    src = ", ".join(issue.get("sources", []))[:50]
     if src:
-        d.text((100, H - 100), f"참고: {src}", font=_font(34), fill="#6E7681")
+        d.text((100, H - 55), f"참고: {src}", font=_font(30), fill="#6E7681", anchor="lm")
+    if photo and photo_credit:
+        d.text((W - 100, H - 55), "Photos: Pexels", font=_font(30), fill="#6E7681", anchor="rm")
     img.save(path)
 
-def title_card(path, text, date_str, sub=""):
+def title_frame(path, date_str, sub="", caption=""):
     img = Image.new("RGB", (W, H), "#101418")
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 400), "7시 브리핑", font=_font(140, True), fill="white", anchor="mm")
-    d.text((W // 2, 570), date_str, font=_font(64), fill="#58A6FF", anchor="mm")
+    d.text((W // 2, 330), "7시 브리핑", font=_font(140, True), fill="white", anchor="mm")
+    d.text((W // 2, 490), date_str, font=_font(64), fill="#58A6FF", anchor="mm")
     if sub:
-        d.text((W // 2, 700), sub, font=_font(44), fill="#8B949E", anchor="mm")
+        d.text((W // 2, 590), sub, font=_font(44), fill="#8B949E", anchor="mm")
+    _caption(img, caption)
     img.save(path)
