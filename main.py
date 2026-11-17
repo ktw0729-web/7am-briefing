@@ -5,7 +5,7 @@
 import argparse, datetime as dt, json, os, re, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
-import cards, tts, video, images
+import cards, cardnews, tts, video, images
 
 def split_caption(text: str, limit: int = 48) -> list[str]:
     """나레이션을 자막 단위(문장, 길면 쉼표/공백에서 분할)로 쪼갠다."""
@@ -50,6 +50,8 @@ def main():
         slides.append(("issue", f"{i}번. {x['title']}. {x['narration']}", x, i, photos))
     slides.append(("outro", data["outro"], None, 99, []))
     used_photo = any(s[4] for s in slides)
+    cardnews.build(f"{out}/cardnews", date_str, issues, {s[3]: s[4] for s in slides if s[0] == "issue"},
+                   images.provider() if used_photo else "")
 
     clips, n = [], 0
     for kind, text, issue, idx, photos in slides:

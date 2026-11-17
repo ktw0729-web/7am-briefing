@@ -26,3 +26,5 @@ jobs:
           YT_PRIVACY: private
       - uses: actions/upload-artifact@v4
         with: { name: news-output, path: out/ }
+      - uses: actions/upload-artifact@v4
+        with: { name: cardnews, path: "out/*/cardnews/" }
