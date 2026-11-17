@@ -56,20 +56,49 @@ def _paste_panel(img, photo, color):
     img.paste(pic, (x0, y0), mask)
 
 def _caption(img, text):
+    """인트로/아웃트로용 하단 자막 (왼쪽 정렬)."""
     if not text:
         return
     ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    od = ImageDraw.Draw(ov)
-    od.rounded_rectangle([90, 790, W - 90, 1000], 28, fill=(0, 0, 0, 175))
+    ImageDraw.Draw(ov).rounded_rectangle([90, 790, W - 90, 1000], 28, fill=(0, 0, 0, 175))
     img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
     d = ImageDraw.Draw(img)
     f = _font(56, True)
-    lines = _wrap(d, text, f, W - 260)[:2]
-    y = 895 - 36 * len(lines)
-    for ln in lines:
-        d.text((W // 2, y), ln, font=f, fill="white", anchor="mt"); y += 76
+    y = 830
+    for ln in _wrap(d, text, f, W - 260)[:2]:
+        d.text((130, y), ln, font=f, fill="white"); y += 76
 
-def issue_frame(path, idx, total, issue, date_str, caption="", photo=None, photo_credit=''):
+NARR_BOX = (100, 735, 1820, 1005)   # 기사 본문(나레이션) 영역: 왼쪽 정렬, 한 페이지에 전부 표시
+
+def _fit_text(d, units, cur):
+    """units(문장 목록)를 박스 안에 전부 들어가도록 글자 크기를 줄여가며 배치하고, 현재 문장만 강조."""
+    x0, y0, x1, y1 = NARR_BOX
+    tokens = [(w, k) for k, u in enumerate(units) for w in u.split(" ") if w]
+    for size in range(46, 23, -2):
+        f, lh = _font(size, False), int(size * 1.4)
+        lines, cur_line, cur_w = [], [], 0
+        sp = d.textlength(" ", font=f)
+        for w, k in tokens:
+            ww = d.textlength(w, font=f)
+            if cur_line and cur_w + sp + ww > x1 - x0:
+                lines.append(cur_line); cur_line, cur_w = [], 0
+            cur_w += (sp if cur_line else 0) + ww
+            cur_line.append((w, k))
+        if cur_line:
+            lines.append(cur_line)
+        if len(lines) * lh <= y1 - y0:
+            break
+    y = y0
+    for line in lines:
+        x = x0
+        for w, k in line:
+            on = (k == cur)
+            fnt = _font(size, True) if on else f
+            d.text((x, y), w, font=fnt, fill="white" if on else "#6E7681")
+            x += d.textlength(w, font=fnt) + sp
+        y += lh
+
+def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None, photo_credit=''):
     img = Image.new("RGB", (W, H), "#101418")
     d = ImageDraw.Draw(img)
     color = COLORS.get(issue["category"], "#555")
@@ -85,12 +114,13 @@ def issue_frame(path, idx, total, issue, date_str, caption="", photo=None, photo
     for ln in _wrap(d, issue["subtitle"], _font(44), 960)[:2]:
         d.text((100, y), ln, font=_font(44), fill="#C9D1D9"); y += 62
     _paste_panel(img, photo, color)
-    _caption(img, caption)
+    d.line([100, 715, 1820, 715], fill="#232A31", width=2)
+    _fit_text(d, list(units), cur)
     src = ", ".join(issue.get("sources", []))[:50]
     if src:
-        d.text((100, H - 55), f"참고: {src}", font=_font(30), fill="#6E7681", anchor="lm")
+        d.text((100, H - 35), f"참고: {src}", font=_font(28), fill="#6E7681", anchor="lm")
     if photo and photo_credit:
-        d.text((W - 100, H - 55), f"Photos: {photo_credit}", font=_font(30), fill="#6E7681", anchor="rm")
+        d.text((W - 100, H - 35), f"Photos: {photo_credit}", font=_font(28), fill="#6E7681", anchor="rm")
     img.save(path)
 
 def title_frame(path, date_str, sub="", caption=""):
