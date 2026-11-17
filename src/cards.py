@@ -1,6 +1,7 @@
 """영상 프레임(1920x1080) 생성: 왼쪽 제목/부제, 오른쪽 이미지, 하단 자막."""
 import glob
 from PIL import Image, ImageDraw, ImageFont
+import brand
 
 W, H = 1920, 1080
 COLORS = {"경제": "#E8590C", "산업": "#1971C2", "국제": "#2F9E44", "기술": "#7048E8", "사회": "#C2255C"}
@@ -112,7 +113,7 @@ def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None,
     d = ImageDraw.Draw(img)
     color = COLORS.get(issue["category"], "#555")
     d.rectangle([0, 0, 24, H], fill=color)
-    d.text((100, 80), f"{date_str}  ·  7시 브리핑  {idx}/{total}", font=_font(40), fill="#8B949E")
+    d.text((100, 80), f"{date_str}  ·  {brand.current['name']}  {idx}/{total}", font=_font(40), fill="#8B949E")
     pw = int(d.textlength(issue["category"], font=_font(48, True))) + 70
     d.rounded_rectangle([100, 170, 100 + pw, 250], 40, fill=color)
     d.text((100 + pw // 2, 210), issue["category"], font=_font(48, True), fill="white", anchor="mm")
@@ -135,9 +136,10 @@ def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None,
 def title_frame(path, date_str, sub="", caption=""):
     img = Image.new("RGB", (W, H), "#101418")
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 330), "7시 브리핑", font=_font(140, True), fill="white", anchor="mm")
-    d.text((W // 2, 490), date_str, font=_font(64), fill="#58A6FF", anchor="mm")
+    d.text((W // 2, 230), brand.BRAND, font=_font(48), fill="#8B949E", anchor="mm")
+    d.text((W // 2, 350), brand.current["name"], font=_font(130, True), fill="white", anchor="mm")
+    d.text((W // 2, 505), date_str, font=_font(64), fill="#58A6FF", anchor="mm")
     if sub:
-        d.text((W // 2, 590), sub, font=_font(44), fill="#8B949E", anchor="mm")
+        d.text((W // 2, 600), sub, font=_font(44), fill="#8B949E", anchor="mm")
     _caption(img, caption)
     img.save(path)

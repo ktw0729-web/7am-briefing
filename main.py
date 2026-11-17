@@ -5,7 +5,7 @@
 import argparse, datetime as dt, json, os, re, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
-import cards, cardnews, tts, video, images
+import cards, cardnews, tts, video, images, brand
 
 # 자막 표시 방식: "sentence" = 읽는 문장 하나만 / "paragraph" = 읽는 단락 전체 (둘 다 흰색, 이전·다음 글은 숨김)
 SUBTITLE_MODE = os.getenv("SUBTITLE_MODE", "sentence")
@@ -49,8 +49,9 @@ def main():
     today = dt.datetime.now(ZoneInfo("Asia/Seoul"))
     # 하루 3판: 아침(07시) / 점심(12시) / 저녁(21시). 실행 시각(KST)으로 판을 정한다. EDITION 환경변수로 강제 가능.
     key = os.getenv("EDITION") or ("morning" if today.hour < 11 else "noon" if today.hour < 17 else "evening")
-    edition = {"morning": "아침", "noon": "점심", "evening": "저녁"}[key]
-    date_str = f"{today.year}.{today.month}.{today.day} {edition}"
+    edition, edition_name = brand.EDITIONS[key]
+    brand.current["name"] = edition_name
+    date_str = f"{today.year}.{today.month}.{today.day}"
     day = today.strftime("%Y-%m-%d")
     out = os.path.join("out", f"{day}_{key}"); os.makedirs(out, exist_ok=True)
     hist_path = os.path.join("history", f"{day}.json")
@@ -61,7 +62,7 @@ def main():
     else:
         from fetch_news import fetch
         from summarize import summarize
-        data = summarize(fetch(), edition=edition, covered=covered)
+        data = summarize(fetch(), edition=edition, edition_name=edition_name, covered=covered)
     json.dump(data, open(f"{out}/issues.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     if not a.sample and not a.dry_run:   # 오늘 다룬 이슈 기록 -> 다음 판에서 중복 방지
         os.makedirs("history", exist_ok=True)
@@ -122,14 +123,14 @@ def main():
 
     if not a.no_youtube and os.getenv("YT_REFRESH_TOKEN"):
         from youtube_upload import upload
-        desc = f"{date_str} 7시 브리핑\n\n" + "\n".join(
+        desc = f"{brand.BRAND} · {edition_name} {date_str}\n\n" + "\n".join(
             f"{i}. [{x['category']}] {x['title']} - {x['subtitle']}" for i, x in enumerate(issues, 1))
         desc += "\n\n※ 언론 보도를 AI로 요약·재구성한 영상입니다."
         if used_photo:
             desc += f"\n사진 출처: {images.provider()}"
         # 공개 모드 + 예약 실행이면: 지금 올려 두고(처리 시간 확보) YouTube가 목표 시각에 자동 공개
         publish_at = target.isoformat() if (scheduled and privacy == "public") else None
-        video_id = upload(final, f"[{date_str}] 7시 브리핑 - 분야별 핵심 이슈 {total}", desc, privacy, publish_at)
+        video_id = upload(final, f"[{date_str}] {edition_name} - 오늘의 핵심 이슈 {total}", desc, privacy, publish_at)
         print("YouTube:", video_id, f"(예약 공개 {publish_at})" if publish_at else f"({privacy})")
 
     if scheduled:

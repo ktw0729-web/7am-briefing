@@ -1,6 +1,7 @@
 """Threads용 세로형 카드뉴스(1080x1350) 생성: 표지 + 이슈별 카드 + 마지막 안내 카드."""
 from PIL import Image, ImageDraw
 from cards import _font, _wrap, _cover, COLORS
+import brand
 
 CW, CH = 1080, 1350
 BG, SUB, DIM = "#101418", "#C9D1D9", "#6E7681"
@@ -23,8 +24,8 @@ def cover(path, date_str, issues):
     img = Image.new("RGB", (CW, CH), BG); d = ImageDraw.Draw(img)
     d.rectangle([0, 0, 20, CH], fill="#58A6FF")
     d.text((80, 110), date_str, font=_font(44), fill="#58A6FF")
-    d.text((80, 180), "7시 브리핑", font=_font(120, True), fill="white")
-    d.text((80, 330), f"오늘의 핵심 이슈 {len(issues)}개", font=_font(46), fill="#8B949E")
+    d.text((80, 190), brand.current["name"], font=_font(104, True), fill="white")
+    d.text((80, 330), f"{brand.BRAND}  ·  오늘의 핵심 이슈 {len(issues)}개", font=_font(44), fill="#8B949E")
     y = 450
     for i, x in enumerate(issues, 1):
         col = COLORS.get(x["category"], "#555")
@@ -63,15 +64,15 @@ def issue_card(path, idx, total, issue, date_str, photo=None, credit=""):
     src = ", ".join(issue.get("sources", []))[:40]
     foot = f"참고: {src}" if src else ""
     d.text((80, CH - 60), foot, font=_font(28), fill=DIM, anchor="lm")
-    d.text((CW - 80, CH - 60), f"{date_str} 7시 브리핑" + (f" · Photo: {credit}" if photo and credit else ""),
+    d.text((CW - 80, CH - 60), f"{date_str} {brand.current['name']}" + (f" · Photo: {credit}" if photo and credit else ""),
            font=_font(28), fill=DIM, anchor="rm")
     img.save(path)
 
 def outro(path, date_str):
     img = Image.new("RGB", (CW, CH), BG); d = ImageDraw.Draw(img)
     d.rectangle([0, 0, 20, CH], fill="#58A6FF")
-    d.text((CW // 2, 520), "7시 브리핑", font=_font(110, True), fill="white", anchor="mm")
-    d.text((CW // 2, 650), "매일 아침 7시, 분야별 핵심 이슈", font=_font(44), fill="#58A6FF", anchor="mm")
+    d.text((CW // 2, 520), brand.BRAND, font=_font(110, True), fill="white", anchor="mm")
+    d.text((CW // 2, 650), "아침5분 · 정오 · 굿나잇  하루 3번 브리핑", font=_font(44), fill="#58A6FF", anchor="mm")
     d.text((CW // 2, 1150), "※ 언론 보도를 AI로 요약·재구성한 콘텐츠입니다.", font=_font(32), fill=DIM, anchor="mm")
     d.text((CW // 2, 1205), "정확한 내용은 각 언론사 원문을 확인해 주세요.", font=_font(32), fill=DIM, anchor="mm")
     img.save(path)
@@ -85,6 +86,6 @@ def build(outdir, date_str, issues, photos_by_issue, credit=""):
         issue_card(f"{outdir}/{i:02d}.png", i, len(issues), x, date_str, ph[0] if ph else None, credit)
     outro(f"{outdir}/99_outro.png", date_str)
     # 스레드 본문 텍스트(복사해서 쓰기용)
-    head = f"📰 {date_str} 7시 브리핑\n오늘의 핵심 이슈 {len(issues)}개\n\n" + "\n".join(
+    head = f"📰 {date_str} {brand.current['name']}\n오늘의 핵심 이슈 {len(issues)}개\n\n" + "\n".join(
         f"{i}. [{x['category']}] {x['title']}" for i, x in enumerate(issues, 1))
     open(f"{outdir}/threads_text.txt", "w", encoding="utf-8").write(head)

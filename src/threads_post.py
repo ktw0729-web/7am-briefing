@@ -1,5 +1,6 @@
 """Threads API 게시: 첫 글(헤드라인 목록) + 답글(이슈별 요약)."""
 import os, time, requests
+import brand
 
 API = "https://graph.threads.net/v1.0"
 
@@ -15,7 +16,7 @@ def _publish(text, reply_to=None):
     return r.json()["id"]
 
 def post_thread(date_str, intro, issues, link=""):
-    head = f"📰 {date_str} 7시 브리핑\n{intro}\n" + (f"▶ 영상: {link}\n" if link else "") + "\n" + "\n".join(
+    head = f"📰 {date_str} {brand.current['name']}\n{intro}\n" + (f"▶ 영상: {link}\n" if link else "") + "\n" + "\n".join(
         f"{i}. [{x['category']}] {x['title']}" for i, x in enumerate(issues, 1))
     root = _publish(head)
     prev = root
