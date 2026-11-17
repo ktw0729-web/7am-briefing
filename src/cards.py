@@ -69,7 +69,7 @@ def _caption(img, text):
     for ln in lines:
         d.text((W // 2, y), ln, font=f, fill="white", anchor="mt"); y += 76
 
-def issue_frame(path, idx, total, issue, date_str, caption="", photo=None, photo_credit=False):
+def issue_frame(path, idx, total, issue, date_str, caption="", photo=None, photo_credit=''):
     img = Image.new("RGB", (W, H), "#101418")
     d = ImageDraw.Draw(img)
     color = COLORS.get(issue["category"], "#555")
@@ -90,7 +90,7 @@ def issue_frame(path, idx, total, issue, date_str, caption="", photo=None, photo
     if src:
         d.text((100, H - 55), f"참고: {src}", font=_font(30), fill="#6E7681", anchor="lm")
     if photo and photo_credit:
-        d.text((W - 100, H - 55), "Photos: Pexels", font=_font(30), fill="#6E7681", anchor="rm")
+        d.text((W - 100, H - 55), f"Photos: {photo_credit}", font=_font(30), fill="#6E7681", anchor="rm")
     img.save(path)
 
 def title_frame(path, date_str, sub="", caption=""):

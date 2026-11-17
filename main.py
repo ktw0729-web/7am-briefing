@@ -58,7 +58,7 @@ def main():
             png, mp3, mp4 = f"{out}/f{n:03d}.png", f"{out}/a{n:03d}.mp3", f"{out}/c{n:03d}.mp4"
             if kind == "issue":
                 photo = photos[ci % len(photos)] if photos else None
-                cards.issue_frame(png, idx, total, issue, date_str, cap, photo, photo_credit=used_photo)
+                cards.issue_frame(png, idx, total, issue, date_str, cap, photo, photo_credit=images.provider() if used_photo else '')
             else:
                 sub = f"오늘의 핵심 이슈 {total}개" if kind == "intro" else "시청해 주셔서 감사합니다"
                 cards.title_frame(png, date_str, sub, cap)
@@ -80,7 +80,7 @@ def main():
             f"{i}. [{x['category']}] {x['title']} - {x['subtitle']}" for i, x in enumerate(issues, 1))
         desc += "\n\n※ 언론 보도를 AI로 요약·재구성한 영상입니다."
         if used_photo:
-            desc += "\n사진 출처: Pexels (https://www.pexels.com)"
+            desc += f"\n사진 출처: {images.provider()}"
         print("YouTube:", upload(final, f"[{date_str}] 7시 브리핑 - 분야별 핵심 이슈 {total}", desc,
                                  os.getenv("YT_PRIVACY", "private")))
 
