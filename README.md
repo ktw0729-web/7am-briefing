@@ -1,4 +1,4 @@
-# 7시 브리핑 자동화 (Threads + YouTube 나레이션)
+# 데일리브리핑 자동화 (Threads + YouTube 나레이션)
 
 ## 1. 로컬 테스트
 pip install -r requirements.txt   # + ffmpeg, 한글 폰트(Noto Sans CJK / 맑은 고딕) 필요
