@@ -1,9 +1,9 @@
 name: daily-news
 on:
-  schedule:                  # UTC 기준 (한국시간 = UTC+9). GitHub 사정으로 5~20분 늦을 수 있음
-    - cron: "0 22 * * *"     # 한국 07:00 아침판
-    - cron: "0 3 * * *"      # 한국 12:00 점심판
-    - cron: "0 12 * * *"     # 한국 21:00 저녁판
+  schedule:                  # UTC 기준 (한국시간 = UTC+9). 게시 목표보다 20분 먼저 시작해 만들어 두고 정시에 게시
+    - cron: "40 21 * * *"    # 한국 06:40 시작 -> 07:00 아침판 게시
+    - cron: "40 2 * * *"     # 한국 11:40 시작 -> 12:00 점심판 게시
+    - cron: "40 11 * * *"    # 한국 20:40 시작 -> 21:00 저녁판 게시
   workflow_dispatch:
 permissions:
   contents: write
@@ -13,7 +13,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,7 +30,8 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          YT_PRIVACY: private
+          PUBLISH_WAIT: ${{ github.event_name == 'schedule' && '1' || '' }}
+          YT_PRIVACY: private   # 검수 후 public 으로 바꾸면 예약 시각에 자동 공개
       - name: Save history (오늘 다룬 이슈 기록)
         run: |
           git config user.name "github-actions[bot]"

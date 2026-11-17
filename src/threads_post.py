@@ -14,8 +14,8 @@ def _publish(text, reply_to=None):
     r.raise_for_status()
     return r.json()["id"]
 
-def post_thread(date_str, intro, issues):
-    head = f"📰 {date_str} 7시 브리핑\n{intro}\n\n" + "\n".join(
+def post_thread(date_str, intro, issues, link=""):
+    head = f"📰 {date_str} 7시 브리핑\n{intro}\n" + (f"▶ 영상: {link}\n" if link else "") + "\n" + "\n".join(
         f"{i}. [{x['category']}] {x['title']}" for i, x in enumerate(issues, 1))
     root = _publish(head)
     prev = root

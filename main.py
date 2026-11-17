@@ -2,7 +2,7 @@
 사용:  python main.py --dry-run        # 게시·업로드 없이 영상까지만
        python main.py --sample         # 뉴스/Claude 없이 샘플 데이터로 테스트
 """
-import argparse, datetime as dt, json, os, re, sys
+import argparse, datetime as dt, json, os, re, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
 import cards, cardnews, tts, video, images
@@ -112,9 +112,14 @@ def main():
     if a.dry_run:
         return
 
-    if not a.no_threads and os.getenv("THREADS_ACCESS_TOKEN"):
-        from threads_post import post_thread
-        print("Threads:", post_thread(date_str, data["intro"], issues))
+    # 예약 게시: 스케줄 실행(PUBLISH_WAIT=1)은 목표 시각(07/12/21시 KST) 전에 만들어 두고 그 시각에 맞춰 게시한다.
+    slot = {"morning": 7, "noon": 12, "evening": 21}[key]
+    target = today.replace(hour=slot, minute=0, second=0, microsecond=0)
+    left = (target - dt.datetime.now(ZoneInfo("Asia/Seoul"))).total_seconds()
+    scheduled = os.getenv("PUBLISH_WAIT") == "1" and 0 < left < 3600
+    privacy = os.getenv("YT_PRIVACY", "private")
+    video_id = ""
+
     if not a.no_youtube and os.getenv("YT_REFRESH_TOKEN"):
         from youtube_upload import upload
         desc = f"{date_str} 7시 브리핑\n\n" + "\n".join(
@@ -122,8 +127,21 @@ def main():
         desc += "\n\n※ 언론 보도를 AI로 요약·재구성한 영상입니다."
         if used_photo:
             desc += f"\n사진 출처: {images.provider()}"
-        print("YouTube:", upload(final, f"[{date_str}] 7시 브리핑 - 분야별 핵심 이슈 {total}", desc,
-                                 os.getenv("YT_PRIVACY", "private")))
+        # 공개 모드 + 예약 실행이면: 지금 올려 두고(처리 시간 확보) YouTube가 목표 시각에 자동 공개
+        publish_at = target.isoformat() if (scheduled and privacy == "public") else None
+        video_id = upload(final, f"[{date_str}] 7시 브리핑 - 분야별 핵심 이슈 {total}", desc, privacy, publish_at)
+        print("YouTube:", video_id, f"(예약 공개 {publish_at})" if publish_at else f"({privacy})")
+
+    if scheduled:
+        left = (target - dt.datetime.now(ZoneInfo("Asia/Seoul"))).total_seconds()
+        if left > 0:
+            print(f"목표 시각 {target:%H:%M}까지 {int(left)}초 대기")
+            time.sleep(left)
+
+    if not a.no_threads and os.getenv("THREADS_ACCESS_TOKEN"):
+        from threads_post import post_thread
+        link = f"https://youtu.be/{video_id}" if (video_id and privacy == "public") else ""
+        print("Threads:", post_thread(date_str, data["intro"], issues, link))
 
 if __name__ == "__main__":
     main()
