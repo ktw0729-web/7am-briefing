@@ -1,8 +1,15 @@
 name: daily-news
 on:
-  schedule:
-    - cron: "0 22 * * *"
+  schedule:                  # UTC 기준 (한국시간 = UTC+9). GitHub 사정으로 5~20분 늦을 수 있음
+    - cron: "0 22 * * *"     # 한국 07:00 아침판
+    - cron: "0 3 * * *"      # 한국 12:00 점심판
+    - cron: "0 12 * * *"     # 한국 21:00 저녁판
   workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: daily-news
+  cancel-in-progress: false
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -24,6 +31,12 @@ jobs:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           YT_PRIVACY: private
+      - name: Save history (오늘 다룬 이슈 기록)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history || true
+          git diff --cached --quiet || (git commit -m "history $(date -u +%FT%H)" && git pull --rebase -q && git push)
       - uses: actions/upload-artifact@v4
         with: { name: news-output, path: out/ }
       - uses: actions/upload-artifact@v4

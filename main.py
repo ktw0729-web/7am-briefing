@@ -47,16 +47,26 @@ def main():
     a = ap.parse_args()
 
     today = dt.datetime.now(ZoneInfo("Asia/Seoul"))
-    date_str = f"{today.year}.{today.month}.{today.day}"
-    out = os.path.join("out", today.strftime("%Y-%m-%d")); os.makedirs(out, exist_ok=True)
+    # 하루 3판: 아침(07시) / 점심(12시) / 저녁(21시). 실행 시각(KST)으로 판을 정한다. EDITION 환경변수로 강제 가능.
+    key = os.getenv("EDITION") or ("morning" if today.hour < 11 else "noon" if today.hour < 17 else "evening")
+    edition = {"morning": "아침", "noon": "점심", "evening": "저녁"}[key]
+    date_str = f"{today.year}.{today.month}.{today.day} {edition}"
+    day = today.strftime("%Y-%m-%d")
+    out = os.path.join("out", f"{day}_{key}"); os.makedirs(out, exist_ok=True)
+    hist_path = os.path.join("history", f"{day}.json")
+    covered = json.load(open(hist_path, encoding="utf-8")) if os.path.exists(hist_path) else []
 
     if a.sample:
         data = json.load(open("sample_data.json", encoding="utf-8"))
     else:
         from fetch_news import fetch
         from summarize import summarize
-        data = summarize(fetch())
+        data = summarize(fetch(), edition=edition, covered=covered)
     json.dump(data, open(f"{out}/issues.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    if not a.sample and not a.dry_run:   # 오늘 다룬 이슈 기록 -> 다음 판에서 중복 방지
+        os.makedirs("history", exist_ok=True)
+        json.dump(covered + [x["title"] for x in data["issues"]], open(hist_path, "w", encoding="utf-8"),
+                  ensure_ascii=False, indent=1)
     issues = data["issues"]
     total = len(issues)
 
@@ -96,7 +106,7 @@ def main():
             tts.speak(cap, mp3)
             video.clip(png, mp3, mp4, pad=0.5 if (ci == len(spoken) - 1 or (kind == 'issue' and para_end)) else 0.15)
             clips.append(os.path.abspath(mp4)); n += 1
-    final = f"{out}/news_{today.strftime('%Y%m%d')}.mp4"
+    final = f"{out}/news_{today.strftime('%Y%m%d')}_{key}.mp4"
     video.concat(clips, os.path.abspath(final), os.path.abspath(f"{out}/list.txt"))
     print("영상 생성:", final, f"(자막 {n}컷)")
     if a.dry_run:
