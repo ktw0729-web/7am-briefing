@@ -26,9 +26,9 @@ def summarize(news: dict, n: int = 10) -> dict:
             lines.append(f"[{cat}] {it['title']}")
     client = anthropic.Anthropic()
     msg = client.messages.create(
-        model=MODEL, max_tokens=6000,
+        model=MODEL, max_tokens=16000,
         messages=[{"role": "user", "content": PROMPT.format(n=n, headlines="\n".join(lines))}],
     )
-    text = msg.content[0].text.strip()
+    text = "".join(b.text for b in msg.content if b.type == "text").strip()
     text = text[text.find("{"): text.rfind("}") + 1]
     return json.loads(text)
