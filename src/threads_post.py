@@ -9,10 +9,14 @@ def _publish(text, reply_to=None):
     data = {"media_type": "TEXT", "text": text[:500], "access_token": tok}
     if reply_to:
         data["reply_to_id"] = reply_to
-    cid = requests.post(f"{API}/{uid}/threads", data=data, timeout=30).json()["id"]
+    c = requests.post(f"{API}/{uid}/threads", data=data, timeout=30)
+    cj = c.json()
+    if "id" not in cj:
+        raise RuntimeError(f"Threads 컨테이너 생성 실패 {c.status_code}: {cj}")
     time.sleep(3)
-    r = requests.post(f"{API}/{uid}/threads_publish", data={"creation_id": cid, "access_token": tok}, timeout=30)
-    r.raise_for_status()
+    r = requests.post(f"{API}/{uid}/threads_publish", data={"creation_id": cj["id"], "access_token": tok}, timeout=30)
+    if not r.ok:
+        raise RuntimeError(f"Threads 게시 실패 {r.status_code}: {r.text}")
     return r.json()["id"]
 
 def post_thread(date_str, intro, issues, link=""):

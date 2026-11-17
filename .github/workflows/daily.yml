@@ -5,6 +5,11 @@ on:
     - cron: "40 2 * * *"     # 한국 11:40 시작 -> 12:00 점심판 게시
     - cron: "40 11 * * *"    # 한국 20:40 시작 -> 21:00 저녁판 게시
   workflow_dispatch:
+    inputs:
+      args:
+        description: 'main.py 옵션 (예: --sample --no-youtube)'
+        required: false
+        default: ''
 permissions:
   contents: write
 concurrency:
@@ -20,7 +25,7 @@ jobs:
         with: { python-version: "3.12" }
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-cjk
       - run: pip install -r requirements.txt
-      - run: python main.py
+      - run: python main.py ${{ github.event.inputs.args }}
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
