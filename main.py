@@ -19,7 +19,13 @@ def split_caption(text: str, limit: int = 70) -> list[str]:
             out.append(sent[:cut + 1].strip()); sent = sent[cut + 1:].strip()
         if sent:
             out.append(sent)
-    return out
+    merged = []                      # 너무 짧은 꼬리 조각(12자 미만)은 앞 문장에 붙인다
+    for c in out:
+        if merged and len(c) < 12 and len(merged[-1]) + len(c) < limit + 12:
+            merged[-1] += " " + c
+        else:
+            merged.append(c)
+    return merged
 
 def main():
     ap = argparse.ArgumentParser()
