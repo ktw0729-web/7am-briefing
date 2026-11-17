@@ -7,6 +7,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
 import cards, cardnews, tts, video, images
 
+# 자막 표시 방식: "sentence" = 읽는 문장 하나만 / "paragraph" = 읽는 단락 전체 (둘 다 흰색, 이전·다음 글은 숨김)
+SUBTITLE_MODE = os.getenv("SUBTITLE_MODE", "sentence")
+
 def split_caption(text: str, limit: int = 70) -> list[str]:
     """나레이션을 자막 단위(문장, 길면 쉼표/공백에서 분할)로 쪼갠다."""
     out = []
@@ -58,28 +61,34 @@ def main():
     total = len(issues)
 
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
-    slides = [("intro", [(c, False) for c in split_caption(data["intro"])], [], None, 0, [])]
+    slides = [("intro", [(c, False, -1) for c in split_caption(data["intro"])], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
         photos = images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
-        spoken, shown = [(f"{i}번. {x['title']}.", True)], []
+        spoken, shown = [(f"{i}번. {x['title']}.", True, -1)], []
         for pi, para in enumerate(split_paragraphs(x["narration"])):
             chunks = split_caption(para)
             for ci, c in enumerate(chunks):
-                spoken.append((c, ci == len(chunks) - 1)); shown.append((c, pi))
+                spoken.append((c, ci == len(chunks) - 1, pi)); shown.append((c, pi))
         slides.append(("issue", spoken, shown, x, i, photos))
-    slides.append(("outro", [(c, False) for c in split_caption(data["outro"])], [], None, 99, []))
+    slides.append(("outro", [(c, False, -1) for c in split_caption(data["outro"])], [], None, 99, []))
     used_photo = any(s[5] for s in slides)
     cardnews.build(f"{out}/cardnews", date_str, issues, {s[4]: s[5] for s in slides if s[0] == "issue"},
                    images.provider() if used_photo else "")
 
     clips, n = [], 0
     for kind, spoken, shown, issue, idx, photos in slides:
-        for ci, (cap, para_end) in enumerate(spoken):
+        for ci, (cap, para_end, pi) in enumerate(spoken):
             png, mp3, mp4 = f"{out}/f{n:03d}.png", f"{out}/a{n:03d}.mp3", f"{out}/c{n:03d}.mp4"
             if kind == "issue":
-                photo = photos[ci % len(photos)] if photos else None
-                # 기사 1건 = 1페이지: 본문 전체를 한 화면에 두고 읽는 문장만 강조 (ci=0은 번호/제목 낭독)
-                cards.issue_frame(png, idx, total, issue, date_str, shown, ci - 1, photo,
+                # 단락이 바뀌면 화면(사진)이 바뀌고, 자막은 읽는 부분만 흰색으로 표시 (제목 낭독 중에는 자막 없음)
+                photo = photos[max(pi, 0) % len(photos)] if photos else None
+                if pi < 0:
+                    units = []
+                elif SUBTITLE_MODE == "paragraph":
+                    units = [(c, 0) for c, p_ in shown if p_ == pi]
+                else:
+                    units = [(cap, 0)]
+                cards.issue_frame(png, idx, total, issue, date_str, units, None, photo,
                                   images.provider() if used_photo else "")
             else:
                 sub = f"오늘의 핵심 이슈 {total}개" if kind == "intro" else "시청해 주셔서 감사합니다"

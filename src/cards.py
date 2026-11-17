@@ -76,7 +76,7 @@ def _fit_text(d, units, cur):
     x0, y0, x1, y1 = NARR_BOX
     units = [(u, 0) if isinstance(u, str) else u for u in units]
     tokens = [(w, k, para) for k, (u, para) in enumerate(units) for w in u.split(" ") if w]
-    for size in range(44, 21, -2):
+    for size in range(58, 21, -2):
         f, lh = _font(size, False), int(size * 1.35)
         gap = int(size * 0.8)
         sp = d.textlength(" ", font=f)
@@ -101,7 +101,7 @@ def _fit_text(d, units, cur):
             y += gap
         x = x0
         for w, k in line:
-            on = (k == cur)
+            on = cur is None or k == cur   # cur=None: 전부 흰색
             fnt = _font(size, True) if on else f
             d.text((x, y), w, font=fnt, fill="white" if on else "#6E7681")
             x += d.textlength(w, font=fnt) + sp
