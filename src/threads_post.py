@@ -5,7 +5,7 @@ import brand
 API = "https://graph.threads.net/v1.0"
 
 def _publish(text, reply_to=None):
-    uid, tok = os.environ["THREADS_USER_ID"], os.environ["THREADS_ACCESS_TOKEN"]
+    uid, tok = "me", os.environ["THREADS_ACCESS_TOKEN"]  # 토큰 주인 계정으로 게시(사용자 ID 불필요)
     data = {"media_type": "TEXT", "text": text[:500], "access_token": tok}
     if reply_to:
         data["reply_to_id"] = reply_to
