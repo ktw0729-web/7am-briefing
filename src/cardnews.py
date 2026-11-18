@@ -78,7 +78,7 @@ def outro(path, date_str):
     img = bg_canvas(CW, CH, "#58A6FF"); d = ImageDraw.Draw(img)
     d.text((CW // 2, 520), brand.BRAND, font=_font(110, True), fill="white", anchor="mm")
     d.rounded_rectangle([CW // 2 - 60, 600, CW // 2 + 60, 606], 3, fill="#58A6FF")
-    d.text((CW // 2, 680), "아침5분 · 정오 · 굿나잇  하루 3번 브리핑", font=_font(44), fill="#58A6FF", anchor="mm")
+    d.text((CW // 2, 680), "굿모닝 · 정오 · 굿나잇  하루 3번 브리핑", font=_font(44), fill="#58A6FF", anchor="mm")
     d.text((CW // 2, 1150), "※ 언론 보도를 AI로 요약·재구성한 콘텐츠입니다.", font=_font(32), fill=DIM, anchor="mm")
     d.text((CW // 2, 1205), "정확한 내용은 각 언론사 원문을 확인해 주세요.", font=_font(32), fill=DIM, anchor="mm")
     img.save(path)
