@@ -117,7 +117,7 @@ def main():
     slot = {"morning": 7, "noon": 12, "evening": 21}[key]
     target = today.replace(hour=slot, minute=0, second=0, microsecond=0)
     left = (target - dt.datetime.now(ZoneInfo("Asia/Seoul"))).total_seconds()
-    scheduled = os.getenv("PUBLISH_WAIT") == "1" and 0 < left < 3600
+    scheduled = os.getenv("PUBLISH_WAIT") == "1" and 0 < left < 10800
     privacy = os.getenv("YT_PRIVACY", "private")
     video_id = ""
 
