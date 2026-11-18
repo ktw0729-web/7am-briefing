@@ -6,7 +6,9 @@ API = "https://graph.threads.net/v1.0"
 
 def _publish(text, reply_to=None, image_url=None):
     uid, tok = "me", os.environ["THREADS_ACCESS_TOKEN"]  # 토큰 주인 계정으로 게시(사용자 ID 불필요)
-    data = {"media_type": "IMAGE" if image_url else "TEXT", "text": text[:500], "access_token": tok}
+    data = {"media_type": "IMAGE" if image_url else "TEXT", "access_token": tok}
+    if text:
+        data["text"] = text[:500]
     if image_url:
         data["image_url"] = image_url
     if reply_to:
@@ -23,11 +25,11 @@ def _publish(text, reply_to=None, image_url=None):
         time.sleep(6)
     raise RuntimeError(f"Threads 게시 실패 {r.status_code}: {r.text}")
 
-def _publish_safe(text, reply_to, image_url):
-    """이미지 게시가 실패하면 텍스트만으로 게시해 스레드가 끊기지 않게 한다."""
+def _publish_safe(text, reply_to, image_url, image_only=False):
+    """이미지 게시가 실패하면 텍스트만으로 게시해 스레드가 끊기지 않게 한다. image_only면 이미지에는 글을 붙이지 않는다."""
     if image_url:
         try:
-            return _publish(text, reply_to, image_url)
+            return _publish("" if image_only else text, reply_to, image_url)
         except Exception as e:
             print("이미지 게시 실패, 텍스트로 대체:", e)
     return _publish(text, reply_to)
@@ -40,6 +42,6 @@ def post_thread(date_str, intro, issues, link="", images=None):
     prev = root
     for i, x in enumerate(issues, 1):
         body = f"{i}. [{x['category']}] {x['title']}\n{x['summary']}\n(참고: {', '.join(x.get('sources', []))})"
-        prev = _publish_safe(body, prev, images.get(f"{i:02d}.png"))
+        prev = _publish_safe(body, prev, images.get(f"{i:02d}.png"), image_only=True)
         time.sleep(2)
     return root
