@@ -10,6 +10,10 @@ on:
         description: 'main.py 옵션 (예: --sample --no-youtube)'
         required: false
         default: ''
+      public:
+        description: 'yes면 수동 실행도 공개로 게시'
+        required: false
+        default: ''
 permissions:
   contents: write
 concurrency:
@@ -18,7 +22,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 240      # 일찍 시작해도 정시까지 기다릴 수 있게
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,7 +41,7 @@ jobs:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           PUBLISH_WAIT: ${{ github.event_name == 'schedule' && '1' || '' }}
-          YT_PRIVACY: ${{ github.event_name == 'schedule' && 'public' || 'private' }}   # 정기 실행은 공개(예약 시각에 자동 공개), 수동 실행은 비공개 테스트
+          YT_PRIVACY: ${{ (github.event_name == 'schedule' || github.event.inputs.public == 'yes') && 'public' || 'private' }}   # 정기 실행은 공개(예약 시각에 자동 공개), 수동 실행은 비공개 테스트
       - name: Save history (오늘 다룬 이슈 기록)
         run: |
           git config user.name "github-actions[bot]"
