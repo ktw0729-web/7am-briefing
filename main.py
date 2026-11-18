@@ -130,7 +130,14 @@ def main():
             desc += f"\n사진 출처: {images.provider()}"
         # 공개 모드 + 예약 실행이면: 지금 올려 두고(처리 시간 확보) YouTube가 목표 시각에 자동 공개
         publish_at = target.isoformat() if (scheduled and privacy == "public") else None
-        video_id = upload(final, f"[{date_str}] {edition_name} - 오늘의 핵심 이슈 {total}", desc, privacy, publish_at)
+        # 썸네일: 영상 첫 화면(제목 화면, 자막 없이) 1280x720
+        from PIL import Image
+        thumb = f"{out}/thumb.jpg"
+        cards.title_frame(f"{out}/thumb_src.png", date_str, f"오늘의 핵심 이슈 {total}개", "")
+        src = Image.open(f"{out}/thumb_src.png").convert("RGB")
+        base = Image.new("RGB", src.size, "#101418"); base.paste(src, (0, 125))   # 글자를 화면 가운데로
+        base.resize((1280, 720)).save(thumb, quality=92)
+        video_id = upload(final, f"[{date_str}] {edition_name} - 오늘의 핵심 이슈 {total}", desc, privacy, publish_at, thumb)
         print("YouTube:", video_id, f"(예약 공개 {publish_at})" if publish_at else f"({privacy})")
 
     if scheduled:

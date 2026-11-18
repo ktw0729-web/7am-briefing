@@ -42,6 +42,6 @@ def post_thread(date_str, intro, issues, link="", images=None):
     prev = root
     for i, x in enumerate(issues, 1):
         body = f"{i}. [{x['category']}] {x['title']}\n{x['summary']}\n(참고: {', '.join(x.get('sources', []))})"
-        prev = _publish_safe(body, prev, images.get(f"{i:02d}.png"), image_only=True)
+        prev = _publish_safe(body, prev, images.get(f"{i:02d}.png"))
         time.sleep(2)
     return root
