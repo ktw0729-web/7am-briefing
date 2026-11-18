@@ -142,7 +142,10 @@ def main():
     if not a.no_threads and os.getenv("THREADS_ACCESS_TOKEN"):
         from threads_post import post_thread
         link = f"https://youtu.be/{video_id}" if (video_id and privacy == "public") else ""
-        print("Threads:", post_thread(date_str, data["intro"], issues, link))
+        import cardhost
+        urls = cardhost.publish(f"{out}/cardnews", f"{today.strftime('%Y%m%d')}_{key}")
+        print("카드 이미지 URL:", len(urls), "개")
+        print("Threads:", post_thread(date_str, data["intro"], issues, link, urls))
 
 if __name__ == "__main__":
     main()
