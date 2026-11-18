@@ -5,7 +5,7 @@ import brand
 
 W, H = 1920, 1080
 COLORS = {"경제": "#E8590C", "산업": "#1971C2", "국제": "#2F9E44", "기술": "#7048E8", "사회": "#C2255C"}
-PANEL = (1130, 150, 1830, 700)           # 오른쪽 이미지 영역 (700x550)
+PANEL = (1130, 175, 1830, 700)           # 오른쪽 이미지 영역 (700x550)
 _cache = {}
 
 def _font(size, bold=False):
@@ -17,6 +17,46 @@ def _font(size, bold=False):
         pick = [c for c in cands if ("Bold" in c) == bold] or cands
         _cache[k] = ImageFont.truetype(pick[0], size)
     return _cache[k]
+
+from PIL import ImageFilter
+BG_TOP, BG_BOT, ROW = (11, 15, 20), (22, 29, 38), "#1A222C"
+
+def bg_canvas(w, h, color):
+    """위→아래로 살짝 밝아지는 그라데이션 + 분야 색상의 은은한 빛(왼쪽 위). 모든 화면이 같은 분위기를 갖게 하는 공통 배경."""
+    base = Image.new("RGB", (1, h))
+    for y in range(h):
+        t = y / (h - 1)
+        base.putpixel((0, y), tuple(int(BG_TOP[i] + (BG_BOT[i] - BG_TOP[i]) * t) for i in range(3)))
+    img = base.resize((w, h))
+    glow = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse([-w * 0.35, -h * 0.55, w * 0.55, h * 0.35], fill=color + "40" if color.startswith("#") and len(color) == 7 else color)
+    glow = glow.filter(ImageFilter.GaussianBlur(min(w, h) * 0.12))
+    return Image.alpha_composite(img.convert("RGBA"), glow).convert("RGB")
+
+def brand_mark(d, x, y, size=34, color="#58A6FF", anchor_right=False):
+    """작은 색 사각형 + '데일리브리핑' 워드마크 (모든 화면 같은 위치·모양)."""
+    f = _font(size, True)
+    tw = int(d.textlength(brand.BRAND, font=f))
+    box = size + 14
+    total = box + tw
+    x0 = x - total if anchor_right else x
+    d.rounded_rectangle([x0, y, x0 + int(size * 0.72), y + int(size * 0.72)], int(size * 0.18), fill=color)
+    d.text((x0 + int(size * 0.72) + 12, y + int(size * 0.36)), brand.BRAND, font=f, fill="#E6EDF3", anchor="lm")
+
+def progress(d, x, y, w, idx, total, color, h=8, gap=8):
+    """이슈 진행 표시: total칸 중 idx번째까지 색칠."""
+    seg = (w - gap * (total - 1)) / total
+    for i in range(total):
+        x0 = x + i * (seg + gap)
+        d.rounded_rectangle([x0, y, x0 + seg, y + h], h // 2, fill=color if i < idx else "#2A333D")
+
+def shadow(img, box, r, blur=28, offset=14, alpha=140):
+    """사진 패널 아래 부드러운 그림자."""
+    x0, y0, x1, y1 = box
+    sh = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    ImageDraw.Draw(sh).rounded_rectangle([x0, y0 + offset, x1, y1 + offset], r, fill=(0, 0, 0, alpha))
+    sh = sh.filter(ImageFilter.GaussianBlur(blur))
+    img.paste(Image.alpha_composite(img.convert("RGBA"), sh).convert("RGB"))
 
 def _wrap(draw, text, font, width):
     """단어(띄어쓰기) 단위로 줄바꿈, 한 단어가 너무 길면 글자 단위로."""
@@ -52,6 +92,7 @@ def _paste_panel(img, photo, color):
         d.ellipse([w * 0.45, -h * 0.25, w * 1.3, h * 0.6], fill=(255, 255, 255, 40))
         d.ellipse([-w * 0.2, h * 0.5, w * 0.5, h * 1.3], fill=(0, 0, 0, 45))
         d.ellipse([w * 0.3, h * 0.3, w * 0.75, h * 0.8], fill=(255, 255, 255, 30))
+    shadow(img, PANEL, 36)
     mask = Image.new("L", (w, h), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, w, h], 36, fill=255)
     img.paste(pic, (x0, y0), mask)
@@ -109,22 +150,23 @@ def _fit_text(d, units, cur):
         y += lh
 
 def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None, photo_credit=''):
-    img = Image.new("RGB", (W, H), "#101418")
-    d = ImageDraw.Draw(img)
     color = COLORS.get(issue["category"], "#555")
-    d.rectangle([0, 0, 24, H], fill=color)
-    d.text((100, 80), f"{date_str}  ·  {brand.current['name']}  {idx}/{total}", font=_font(40), fill="#8B949E")
+    img = bg_canvas(W, H, color)
+    d = ImageDraw.Draw(img)
+    brand_mark(d, 100, 62, 38, color)
+    d.text((W - 100, 82), f"{date_str}  ·  {brand.current['name']}", font=_font(36), fill="#8B949E", anchor="rm")
+    progress(d, 100, 128, W - 200, idx, total, color, h=6)
     pw = int(d.textlength(issue["category"], font=_font(48, True))) + 70
-    d.rounded_rectangle([100, 170, 100 + pw, 250], 40, fill=color)
-    d.text((100 + pw // 2, 210), issue["category"], font=_font(48, True), fill="white", anchor="mm")
-    y = 290
+    d.rounded_rectangle([100, 190, 100 + pw, 270], 40, fill=color)
+    d.text((100 + pw // 2, 230), issue["category"], font=_font(48, True), fill="white", anchor="mm")
+    y = 310
     for ln in _wrap(d, issue["title"], _font(80, True), 960)[:3]:
         d.text((100, y), ln, font=_font(80, True), fill="white"); y += 100
     y += 20
     for ln in _wrap(d, issue["subtitle"], _font(44), 960)[:2]:
         d.text((100, y), ln, font=_font(44), fill="#C9D1D9"); y += 62
     _paste_panel(img, photo, color)
-    d.line([100, 715, 1820, 715], fill="#232A31", width=2)
+    d.line([100, 722, 1820, 722], fill="#2A333D", width=2)
     _fit_text(d, list(units), cur)
     src = ", ".join(issue.get("sources", []))[:50]
     if src:
@@ -134,12 +176,14 @@ def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None,
     img.save(path)
 
 def title_frame(path, date_str, sub="", caption=""):
-    img = Image.new("RGB", (W, H), "#101418")
+    img = bg_canvas(W, H, "#58A6FF")
     d = ImageDraw.Draw(img)
-    d.text((W // 2, 230), brand.BRAND, font=_font(48), fill="#8B949E", anchor="mm")
+    bw = int(d.textlength(brand.BRAND, font=_font(48, True))) + 34 + 12
+    brand_mark(d, W // 2 - bw // 2, 190, 48)
+    d.rounded_rectangle([W // 2 - 60, 560, W // 2 + 60, 566], 3, fill="#58A6FF")
     d.text((W // 2, 350), brand.current["name"], font=_font(130, True), fill="white", anchor="mm")
-    d.text((W // 2, 505), date_str, font=_font(64), fill="#58A6FF", anchor="mm")
+    d.text((W // 2, 470), date_str, font=_font(64), fill="#58A6FF", anchor="mm")
     if sub:
-        d.text((W // 2, 600), sub, font=_font(44), fill="#8B949E", anchor="mm")
+        d.text((W // 2, 640), sub, font=_font(44), fill="#8B949E", anchor="mm")
     _caption(img, caption)
     img.save(path)

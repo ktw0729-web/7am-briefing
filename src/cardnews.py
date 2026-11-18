@@ -1,6 +1,6 @@
 """Threads용 세로형 카드뉴스(1080x1350) 생성: 표지 + 이슈별 카드 + 마지막 안내 카드."""
 from PIL import Image, ImageDraw
-from cards import _font, _wrap, _cover, COLORS
+from cards import _font, _wrap, _cover, COLORS, bg_canvas, brand_mark, progress, shadow, ROW
 import brand
 
 CW, CH = 1080, 1350
@@ -21,58 +21,64 @@ def _illustration(w, h, color):
     return pic
 
 def cover(path, date_str, issues):
-    img = Image.new("RGB", (CW, CH), BG); d = ImageDraw.Draw(img)
-    d.rectangle([0, 0, 20, CH], fill="#58A6FF")
-    d.text((80, 110), date_str, font=_font(44), fill="#58A6FF")
-    d.text((80, 190), brand.current["name"], font=_font(104, True), fill="white")
-    d.text((80, 330), f"{brand.BRAND}  ·  오늘의 핵심 이슈 {len(issues)}개", font=_font(44), fill="#8B949E")
-    y = 450
+    img = bg_canvas(CW, CH, "#58A6FF"); d = ImageDraw.Draw(img)
+    brand_mark(d, 70, 70, 40)
+    d.text((CW - 70, 90), date_str, font=_font(40), fill="#58A6FF", anchor="rm")
+    d.text((70, 190), brand.current["name"], font=_font(112, True), fill="white")
+    d.text((72, 335), f"오늘의 핵심 이슈 {len(issues)}개", font=_font(44), fill="#8B949E")
+    n = max(len(issues), 1)
+    rowh = min(92, int(780 / n)); y = 440
     for i, x in enumerate(issues, 1):
         col = COLORS.get(x["category"], "#555")
-        d.rounded_rectangle([80, y, 80 + 120, y + 56], 28, fill=col)
-        d.text((140, y + 28), x["category"], font=_font(32, True), fill="white", anchor="mm")
-        t = _wrap(d, x["title"], _font(38, True), 780)[0]
+        d.rounded_rectangle([60, y, CW - 60, y + rowh - 12], 22, fill=ROW)
+        d.rounded_rectangle([60, y, 74, y + rowh - 12], 7, fill=col)
+        d.text((110, y + (rowh - 12) // 2), f"{i}", font=_font(34, True), fill=col, anchor="mm")
+        d.text((160, y + (rowh - 12) // 2), x["category"], font=_font(28, True), fill=col, anchor="lm")
+        t = _wrap(d, x["title"], _font(34, True), 740)[0]
         if t != x["title"]:
             t = t[:-1] + "…"
-        d.text((225, y + 28), t, font=_font(38, True), fill="white", anchor="lm")
-        y += 82
-    d.text((CW - 80, CH - 70), "옆으로 넘겨 보세요 ▶", font=_font(34), fill=DIM, anchor="rm")
+        d.text((262, y + (rowh - 12) // 2), t, font=_font(34, True), fill="white", anchor="lm")
+        y += rowh
+    d.text((CW - 70, CH - 60), "옆으로 넘겨 보세요 ▶", font=_font(34), fill=DIM, anchor="rm")
     img.save(path)
 
 def issue_card(path, idx, total, issue, date_str, photo=None, credit=""):
-    img = Image.new("RGB", (CW, CH), BG); d = ImageDraw.Draw(img)
     col = COLORS.get(issue["category"], "#555")
-    d.rectangle([0, 0, 20, CH], fill=col)
+    img = bg_canvas(CW, CH, col); d = ImageDraw.Draw(img)
     box = (60, 60, CW - 60, 520)
     w, h = box[2] - box[0], box[3] - box[1]
     pic = _cover(__import__("PIL.Image", fromlist=["Image"]).open(photo).convert("RGB"), w, h) if photo \
         else _illustration(w, h, col)
+    shadow(img, box, 40)
     _round_paste(img, pic, box)
+    d = ImageDraw.Draw(img)
     pw = int(d.textlength(issue["category"], font=_font(40, True))) + 60
-    d.rounded_rectangle([80, 560, 80 + pw, 632], 36, fill=col)
-    d.text((80 + pw // 2, 596), issue["category"], font=_font(40, True), fill="white", anchor="mm")
-    d.text((CW - 80, 596), f"{idx} / {total}", font=_font(38), fill=DIM, anchor="rm")
+    d.rounded_rectangle([70, 560, 70 + pw, 632], 36, fill=col)
+    d.text((70 + pw // 2, 596), issue["category"], font=_font(40, True), fill="white", anchor="mm")
+    d.text((CW - 70, 596), f"{idx} / {total}", font=_font(38, True), fill="#8B949E", anchor="rm")
+    progress(d, 70 + pw + 30, 592, CW - 70 - 130 - (70 + pw + 30), idx, total, col, h=8)
     y = 670
-    for ln in _wrap(d, issue["title"], _font(60, True), CW - 160)[:3]:
-        d.text((80, y), ln, font=_font(60, True), fill="white"); y += 78
+    for ln in _wrap(d, issue["title"], _font(60, True), CW - 140)[:3]:
+        d.text((70, y), ln, font=_font(60, True), fill="white"); y += 78
     y += 10
-    for ln in _wrap(d, issue["subtitle"], _font(38, True), CW - 160)[:2]:
-        d.text((80, y), ln, font=_font(38, True), fill=col if col != "#101418" else SUB); y += 54
-    y += 18
-    for ln in _wrap(d, issue["summary"], _font(36), CW - 160)[:6]:
-        d.text((80, y), ln, font=_font(36), fill=SUB); y += 54
+    for ln in _wrap(d, issue["subtitle"], _font(38, True), CW - 140)[:2]:
+        d.text((70, y), ln, font=_font(38, True), fill=col); y += 54
+    y += 14
+    d.line([70, y, CW - 70, y], fill="#2A333D", width=2); y += 26
+    for ln in _wrap(d, issue["summary"], _font(37), CW - 140)[:7]:
+        d.text((70, y), ln, font=_font(37), fill="#D0D7DE"); y += 56
     src = ", ".join(issue.get("sources", []))[:40]
-    foot = f"참고: {src}" if src else ""
-    d.text((80, CH - 60), foot, font=_font(28), fill=DIM, anchor="lm")
-    d.text((CW - 80, CH - 60), f"{date_str} {brand.current['name']}" + (f" · Photo: {credit}" if photo and credit else ""),
-           font=_font(28), fill=DIM, anchor="rm")
+    d.line([70, CH - 110, CW - 70, CH - 110], fill="#2A333D", width=2)
+    brand_mark(d, 70, CH - 82, 30, col)
+    foot = (f"참고: {src}" if src else "") + (f"  ·  Photo: {credit}" if photo and credit else "")
+    d.text((CW - 70, CH - 62), foot, font=_font(27), fill=DIM, anchor="rm")
     img.save(path)
 
 def outro(path, date_str):
-    img = Image.new("RGB", (CW, CH), BG); d = ImageDraw.Draw(img)
-    d.rectangle([0, 0, 20, CH], fill="#58A6FF")
+    img = bg_canvas(CW, CH, "#58A6FF"); d = ImageDraw.Draw(img)
     d.text((CW // 2, 520), brand.BRAND, font=_font(110, True), fill="white", anchor="mm")
-    d.text((CW // 2, 650), "아침5분 · 정오 · 굿나잇  하루 3번 브리핑", font=_font(44), fill="#58A6FF", anchor="mm")
+    d.rounded_rectangle([CW // 2 - 60, 600, CW // 2 + 60, 606], 3, fill="#58A6FF")
+    d.text((CW // 2, 680), "아침5분 · 정오 · 굿나잇  하루 3번 브리핑", font=_font(44), fill="#58A6FF", anchor="mm")
     d.text((CW // 2, 1150), "※ 언론 보도를 AI로 요약·재구성한 콘텐츠입니다.", font=_font(32), fill=DIM, anchor="mm")
     d.text((CW // 2, 1205), "정확한 내용은 각 언론사 원문을 확인해 주세요.", font=_font(32), fill=DIM, anchor="mm")
     img.save(path)
