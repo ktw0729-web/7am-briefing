@@ -39,7 +39,6 @@ def cover(path, date_str, issues):
             t = t[:-1] + "…"
         d.text((262, y + (rowh - 12) // 2), t, font=_font(34, True), fill="white", anchor="lm")
         y += rowh
-    d.text((CW - 70, CH - 60), "옆으로 넘겨 보세요 ▶", font=_font(34), fill=DIM, anchor="rm")
     img.save(path)
 
 def issue_card(path, idx, total, issue, date_str, photo=None, credit=""):
