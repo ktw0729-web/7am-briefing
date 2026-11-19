@@ -1,5 +1,5 @@
 """영상 프레임(1920x1080) 생성: 왼쪽 제목/부제, 오른쪽 이미지, 하단 자막."""
-import glob
+import glob, os
 from PIL import Image, ImageDraw, ImageFont
 import brand
 
@@ -171,7 +171,7 @@ def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None,
     src = ", ".join(issue.get("sources", []))[:50]
     if src:
         d.text((100, H - 35), f"참고: {src}", font=_font(28), fill="#6E7681", anchor="lm")
-    if photo and photo_credit:
+    if photo and photo_credit and "ill" not in os.path.basename(photo):
         d.text((W - 100, H - 35), f"Photos: {photo_credit}", font=_font(28), fill="#6E7681", anchor="rm")
     img.save(path)
 

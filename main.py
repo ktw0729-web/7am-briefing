@@ -5,7 +5,7 @@
 import argparse, datetime as dt, json, os, re, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
-import cards, cardnews, tts, video, images, brand
+import cards, cardnews, tts, video, images, brand, illust
 
 # 자막 표시 방식: "sentence" = 읽는 문장 하나만 / "paragraph" = 읽는 단락 전체 (둘 다 흰색, 이전·다음 글은 숨김)
 SUBTITLE_MODE = os.getenv("SUBTITLE_MODE", "sentence")
@@ -44,6 +44,7 @@ def main():
     ap.add_argument("--sample", action="store_true")
     ap.add_argument("--no-threads", action="store_true")
     ap.add_argument("--no-youtube", action="store_true")
+    ap.add_argument("--no-illust", action="store_true")
     a = ap.parse_args()
 
     today = dt.datetime.now(ZoneInfo("Asia/Seoul"))
@@ -71,10 +72,12 @@ def main():
     issues = data["issues"]
     total = len(issues)
 
+    ills = illust.make_all(issues, out, cards.COLORS) if os.getenv("ANTHROPIC_API_KEY") and not a.no_illust else {}
+
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
     slides = [("intro", [(c, False, -1) for c in split_caption(data["intro"])], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
-        photos = images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
+        photos = [ills[i]] if ills.get(i) else images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
         spoken, shown = [(f"{i}번. {x['title']}.", True, -1)], []
         for pi, para in enumerate(split_paragraphs(x["narration"])):
             chunks = split_caption(para)
@@ -82,7 +85,7 @@ def main():
                 spoken.append((c, ci == len(chunks) - 1, pi)); shown.append((c, pi))
         slides.append(("issue", spoken, shown, x, i, photos))
     slides.append(("outro", [(c, False, -1) for c in split_caption(data["outro"])], [], None, 99, []))
-    used_photo = any(s[5] for s in slides)
+    used_photo = any(p for s in slides for p in s[5] if "/ill" not in p)   # 사진 출처 표기는 스톡 사진을 쓴 경우만
     cardnews.build(f"{out}/cardnews", date_str, issues, {s[4]: s[5] for s in slides if s[0] == "issue"},
                    images.provider() if used_photo else "")
 

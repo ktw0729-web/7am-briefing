@@ -1,7 +1,7 @@
 """Threads용 세로형 카드뉴스(1080x1350) 생성: 표지 + 이슈별 카드 + 마지막 안내 카드."""
 from PIL import Image, ImageDraw
 from cards import _font, _wrap, _cover, COLORS, bg_canvas, brand_mark, progress, shadow, ROW
-import brand
+import os, brand
 
 CW, CH = 1080, 1350
 BG, SUB, DIM = "#101418", "#C9D1D9", "#6E7681"
@@ -70,7 +70,7 @@ def issue_card(path, idx, total, issue, date_str, photo=None, credit=""):
     src = ", ".join(issue.get("sources", []))[:40]
     d.line([70, CH - 110, CW - 70, CH - 110], fill="#2A333D", width=2)
     brand_mark(d, 70, CH - 82, 30, col)
-    foot = (f"참고: {src}" if src else "") + (f"  ·  Photo: {credit}" if photo and credit else "")
+    foot = (f"참고: {src}" if src else "") + (f"  ·  Photo: {credit}" if photo and credit and "ill" not in os.path.basename(photo) else "")
     d.text((CW - 70, CH - 62), foot, font=_font(27), fill=DIM, anchor="rm")
     img.save(path)
 
