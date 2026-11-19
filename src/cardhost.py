@@ -7,7 +7,7 @@ def publish(card_dir, run_id):
     repo, tok = os.getenv("GITHUB_REPOSITORY"), os.getenv("GITHUB_TOKEN")
     if not (repo and tok):
         return {}
-    pngs = sorted(glob.glob(f"{card_dir}/*.png"))
+    pngs = sorted(glob.glob(f"{card_dir}/ill*.png") + glob.glob(f"{card_dir}/[0-9]*.png") + glob.glob(f"{card_dir}/*_cover.png"))
     if not pngs:
         return {}
     tmp = tempfile.mkdtemp()

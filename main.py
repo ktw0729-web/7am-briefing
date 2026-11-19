@@ -74,7 +74,8 @@ def main():
     total = len(issues)
 
     if a.illust_only:
-        print(illust.make_all(issues, out, cards.COLORS)); return
+        r = illust.make_all(issues, out, cards.COLORS); print(r)
+        import cardhost; print(cardhost.publish(out, 'illust_test')); return
     ills = illust.make_all(issues, out, cards.COLORS) if os.getenv("ANTHROPIC_API_KEY") and not a.no_illust else {}
 
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
