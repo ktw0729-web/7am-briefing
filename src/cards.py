@@ -98,17 +98,23 @@ def _paste_panel(img, photo, color):
     img.paste(pic, (x0, y0), mask)
 
 def _caption(img, text):
-    """인트로/아웃트로용 하단 자막 (왼쪽 정렬)."""
+    """인트로/아웃트로용 하단 자막 (왼쪽 정렬). 한 단락 전체를 박스 안에 맞춰 표시."""
     if not text:
         return
+    d0 = ImageDraw.Draw(img)
+    for size in range(56, 33, -2):
+        f = _font(size, True)
+        lines = _wrap(d0, text, f, W - 260)
+        lh = int(size * 1.4)
+        if len(lines) * lh <= 200:
+            break
     ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
     ImageDraw.Draw(ov).rounded_rectangle([90, 790, W - 90, 1000], 28, fill=(0, 0, 0, 175))
     img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
     d = ImageDraw.Draw(img)
-    f = _font(56, True)
-    y = 830
-    for ln in _wrap(d, text, f, W - 260)[:2]:
-        d.text((130, y), ln, font=f, fill="white"); y += 76
+    y = 895 - len(lines) * lh // 2
+    for ln in lines:
+        d.text((130, y), ln, font=f, fill="white"); y += lh
 
 NARR_BOX = (100, 735, 1820, 1005)   # 기사 본문(나레이션) 영역: 왼쪽 정렬, 한 페이지에 전부 표시
 

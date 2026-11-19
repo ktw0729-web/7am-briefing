@@ -2,12 +2,12 @@
 Threads는 이미지를 '공개 URL'로만 받기 때문에 필요하다. GitHub Actions의 GITHUB_TOKEN을 사용."""
 import os, glob, shutil, subprocess, tempfile
 
-def publish(card_dir, run_id):
+def publish(card_dir, run_id, patterns=None):
     """card_dir의 PNG를 cards 브랜치 {run_id}/ 아래에 올리고 {파일명: URL} 반환. 실패하면 {}."""
     repo, tok = os.getenv("GITHUB_REPOSITORY"), os.getenv("GITHUB_TOKEN")
     if not (repo and tok):
         return {}
-    pngs = sorted(glob.glob(f"{card_dir}/ill*.png") + glob.glob(f"{card_dir}/[0-9]*.png") + glob.glob(f"{card_dir}/*_cover.png"))
+    pngs = sorted(sum((glob.glob(f"{card_dir}/{g}") for g in (patterns or ["ill*.png", "[0-9]*.png", "*_cover.png"])), []))
     if not pngs:
         return {}
     tmp = tempfile.mkdtemp()

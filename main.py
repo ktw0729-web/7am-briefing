@@ -44,6 +44,7 @@ def main():
     ap.add_argument("--sample", action="store_true")
     ap.add_argument("--no-threads", action="store_true")
     ap.add_argument("--no-youtube", action="store_true")
+    ap.add_argument("--tts-sample", action="store_true", help="음성 후보 샘플 mp3 생성 후 종료")
     ap.add_argument("--no-illust", action="store_true")
     ap.add_argument("--illust-only", action="store_true", help="일러스트만 만들어 보고 종료(테스트)")
     a = ap.parse_args()
@@ -58,6 +59,15 @@ def main():
     out = os.path.join("out", f"{day}_{key}"); os.makedirs(out, exist_ok=True)
     hist_path = os.path.join("history", f"{day}.json")
     covered = json.load(open(hist_path, encoding="utf-8")) if os.path.exists(hist_path) else []
+
+    if a.tts_sample:
+        txt = "안녕하세요, 굿모닝 브리핑입니다. 오늘 아침은 AI 대형 상장과 수출 1조 달러 돌파, APEC 외교전까지 핵심 이슈 열 가지를 전해드립니다."
+        for v in ["ko-KR-HyunsuMultilingualNeural", "ko-KR-InJoonNeural", "ko-KR-SunHiNeural"]:
+            try:
+                tts.speak(txt, f"{out}/voice_{v.split('-')[2].replace('Neural','')}.mp3", voice=v)
+            except Exception as e:
+                print("실패", v, e)
+        import cardhost; print(cardhost.publish(out, 'tts_test', ["voice_*.mp3"])); return
 
     if a.sample:
         data = json.load(open("sample_data.json", encoding="utf-8"))
@@ -79,7 +89,7 @@ def main():
     ills = illust.make_all(issues, out, cards.COLORS) if os.getenv("ANTHROPIC_API_KEY") and not a.no_illust else {}
 
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
-    slides = [("intro", [(c, False, -1) for c in split_caption(data["intro"])], [], None, 0, [])]
+    slides = [("intro", [(" ".join(data["intro"].split()), False, -1)], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
         photos = [ills[i]] if ills.get(i) else images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
         spoken, shown = [(f"{i}번. {x['title']}.", True, -1)], []
@@ -88,7 +98,7 @@ def main():
             for ci, c in enumerate(chunks):
                 spoken.append((c, ci == len(chunks) - 1, pi)); shown.append((c, pi))
         slides.append(("issue", spoken, shown, x, i, photos))
-    slides.append(("outro", [(c, False, -1) for c in split_caption(data["outro"])], [], None, 99, []))
+    slides.append(("outro", [(" ".join(data["outro"].split()), False, -1)], [], None, 99, []))
     used_photo = any(p for s in slides for p in s[5] if "/ill" not in p)   # 사진 출처 표기는 스톡 사진을 쓴 경우만
     cardnews.build(f"{out}/cardnews", date_str, issues, {s[4]: s[5] for s in slides if s[0] == "issue"},
                    images.provider() if used_photo else "")
