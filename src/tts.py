@@ -1,7 +1,7 @@
 """텍스트 → 음성(mp3). edge-tts(무료) 사용. 필요시 다른 TTS로 교체."""
 import asyncio, os, subprocess, edge_tts
 
-VOICE = os.getenv("TTS_VOICE", "ko-KR-HyunsuMultilingualNeural")   # 대안: ko-KR-SunHiNeural(여), ko-KR-InJoonNeural(남)
+VOICE = os.getenv("TTS_VOICE", "ko-KR-SunHiNeural")   # 대안: ko-KR-InJoonNeural(남)
 FALLBACK = "ko-KR-SunHiNeural"
 RATE = os.getenv("TTS_RATE", "+10%")   # 1.1배속
 

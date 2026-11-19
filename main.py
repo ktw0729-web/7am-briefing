@@ -62,7 +62,7 @@ def main():
 
     if a.tts_sample:
         txt = "안녕하세요, 굿모닝 브리핑입니다. 오늘 아침은 AI 대형 상장과 수출 1조 달러 돌파, APEC 외교전까지 핵심 이슈 열 가지를 전해드립니다."
-        for v in ["ko-KR-HyunsuMultilingualNeural", "ko-KR-InJoonNeural", "ko-KR-SunHiNeural"]:
+        for v in ["ko-KR-InJoonNeural", "ko-KR-SunHiNeural"]:
             try:
                 tts.speak(txt, f"{out}/voice_{v.split('-')[2].replace('Neural','')}.mp3", voice=v)
             except Exception as e:
