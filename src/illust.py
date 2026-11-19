@@ -20,13 +20,15 @@ PROMPT = """뉴스 카드용 일러스트를 SVG 코드로 그려라.
 - <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" ...> 로 시작해 </svg>로 끝낸다. 설명 없이 SVG 코드만 출력.
 - 글자(<text>), 숫자, 로고, 국기, 실존 인물의 얼굴·초상, 브랜드 상징은 절대 넣지 않는다.
 - 외부 링크·<image>·<script>·<foreignObject>·폰트 사용 금지. 도형(path, rect, circle, ellipse, polygon, g, linearGradient, radialGradient, filter 제외)만 사용.
+- 코드는 간결하게(도형 40개 이하, 6000자 이내).
 - 핵심 요소는 가운데 70% 영역 안에 둔다(가장자리는 잘릴 수 있음). 배경은 전체를 꽉 채운다.
 """
 
 def _clean(svg: str) -> str:
-    svg = svg[svg.find("<svg"): svg.rfind("</svg>") + 6]
-    if not svg:
-        raise ValueError("SVG 없음")
+    a, b = svg.find("<svg"), svg.rfind("</svg>")
+    if a < 0 or b < 0:
+        raise ValueError("SVG 없음/미완성")
+    svg = svg[a: b + 6]
     svg = re.sub(r"<(text|script|image|foreignObject)\b.*?</\1>", "", svg, flags=re.S | re.I)
     svg = re.sub(r"<(text|script|image|foreignObject)\b[^>]*/>", "", svg, flags=re.I)
     svg = re.sub(r"(xlink:)?href\s*=\s*\"(?!#)[^\"]*\"", "", svg)
@@ -35,11 +37,18 @@ def _clean(svg: str) -> str:
 def _one(issue: dict, color: str, dest: str):
     import cairosvg
     client = anthropic.Anthropic()
-    msg = client.messages.create(model=MODEL, max_tokens=7000, messages=[{"role": "user", "content": PROMPT.format(
+    msg = client.messages.create(model=MODEL, max_tokens=12000, messages=[{"role": "user", "content": PROMPT.format(
         category=issue["category"], title=issue["title"], subtitle=issue.get("subtitle", ""),
         summary=issue.get("summary", ""), color=color, w=W, h=H)}])
-    svg = _clean("".join(b.text for b in msg.content if b.type == "text"))
-    cairosvg.svg2png(bytestring=svg.encode("utf-8"), write_to=dest, output_width=W, output_height=H)
+    raw = "".join(b.text for b in msg.content if b.type == "text")
+    try:
+        svg = _clean(raw)
+    except Exception as e:
+        raise RuntimeError(f"{e} | stop={msg.stop_reason} len={len(raw)} head={raw[:200]!r}")
+    try:
+        cairosvg.svg2png(bytestring=svg.encode("utf-8"), write_to=dest, output_width=W, output_height=H)
+    except Exception as e:
+        raise RuntimeError(f"렌더 실패 {e} | len={len(svg)} head={svg[:150]!r} tail={svg[-150:]!r}")
     return dest
 
 def make_all(issues: list, outdir: str, colors: dict) -> dict:

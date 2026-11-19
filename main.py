@@ -45,6 +45,7 @@ def main():
     ap.add_argument("--no-threads", action="store_true")
     ap.add_argument("--no-youtube", action="store_true")
     ap.add_argument("--no-illust", action="store_true")
+    ap.add_argument("--illust-only", action="store_true", help="일러스트만 만들어 보고 종료(테스트)")
     a = ap.parse_args()
 
     today = dt.datetime.now(ZoneInfo("Asia/Seoul"))
@@ -72,6 +73,8 @@ def main():
     issues = data["issues"]
     total = len(issues)
 
+    if a.illust_only:
+        print(illust.make_all(issues, out, cards.COLORS)); return
     ills = illust.make_all(issues, out, cards.COLORS) if os.getenv("ANTHROPIC_API_KEY") and not a.no_illust else {}
 
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
