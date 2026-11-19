@@ -27,7 +27,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-noto-cjk libcairo2
+      - name: 시스템 패키지 (멈추면 재시도)
+        timeout-minutes: 15
+        run: |
+          for i in 1 2 3; do
+            timeout 240 sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=20 \
+              && timeout 420 sudo apt-get install -y ffmpeg fonts-noto-cjk libcairo2 && break
+            echo "apt 재시도 $i"; sleep 5
+          done
       - run: pip install -r requirements.txt
       - run: python main.py ${{ github.event.inputs.args }}
         env:
