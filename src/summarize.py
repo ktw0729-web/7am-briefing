@@ -1,7 +1,8 @@
-"""Claude로 분야별 이슈 10개 선정 + 요약 + 나레이션 대본 생성."""
-import json, os, anthropic
+"""분야별 이슈 10개 선정 + 요약 + 나레이션 대본 생성. GEMINI_API_KEY가 있으면 Gemini(무료 티어), 없으면 Claude 사용."""
+import json, os, time, requests
 
 MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5-5")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 포함)이다.
 이번 판은 [{edition}판]이다. 같은 사건을 다룬 기사는 하나로 묶어, 분야가 고르게 섞이도록 오늘의 핵심 이슈 {n}개를 골라라.
@@ -22,16 +23,32 @@ PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 �
 {headlines}
 """
 
+def _gemini(prompt: str) -> str:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+    body = {"contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000}}
+    last = None
+    for i in range(4):
+        r = requests.post(url, headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]}, json=body, timeout=180)
+        if r.status_code in (429, 500, 502, 503, 504):
+            last = f"{r.status_code} {r.text[:200]}"; time.sleep(15 * (i + 1)); continue
+        r.raise_for_status()
+        parts = r.json()["candidates"][0]["content"]["parts"]
+        return "".join(p.get("text", "") for p in parts)
+    raise RuntimeError(f"Gemini 호출 실패: {last}")
+
+def _claude(prompt: str) -> str:
+    import anthropic
+    msg = anthropic.Anthropic().messages.create(
+        model=MODEL, max_tokens=16000, messages=[{"role": "user", "content": prompt}])
+    return "".join(b.text for b in msg.content if b.type == "text")
+
 def summarize(news: dict, n: int = 10, edition: str = "아침", edition_name: str = "브리핑", covered=()) -> dict:
     lines = []
     for cat, items in news.items():
         for it in items:
             lines.append(f"[{cat}] {it['title']}")
-    client = anthropic.Anthropic()
-    msg = client.messages.create(
-        model=MODEL, max_tokens=16000,
-        messages=[{"role": "user", "content": PROMPT.format(n=n, edition=edition, edition_name=edition_name, covered=("; ".join(covered) or "없음"), headlines="\n".join(lines))}],
-    )
-    text = "".join(b.text for b in msg.content if b.type == "text").strip()
+    prompt = PROMPT.format(n=n, edition=edition, edition_name=edition_name, covered=("; ".join(covered) or "없음"), headlines="\n".join(lines))
+    text = (_gemini(prompt) if os.getenv("GEMINI_API_KEY") else _claude(prompt)).strip()
     text = text[text.find("{"): text.rfind("}") + 1]
     return json.loads(text)
