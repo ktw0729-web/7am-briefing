@@ -2,7 +2,6 @@
 import json, os, time, requests
 
 MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5-5")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 포함)이다.
 이번 판은 [{edition}판]이다. 같은 사건을 다룬 기사는 하나로 묶어, 분야가 고르게 섞이도록 오늘의 핵심 이슈 {n}개를 골라라.
@@ -23,8 +22,8 @@ PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 �
 {headlines}
 """
 
-def _pick_model(key: str) -> str:
-    """지정 모델이 404일 때: 키로 쓸 수 있는 최신 flash 모델을 자동 탐색."""
+def _models(key: str) -> list:
+    """사용 가능한 flash 모델 목록(안정판 우선, 최신 우선). GEMINI_MODEL을 직접 지정하면 맨 앞에 둔다."""
     import re
     r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", headers={"x-goog-api-key": key}, timeout=60)
     r.raise_for_status()
@@ -33,29 +32,41 @@ def _pick_model(key: str) -> str:
         n = m["name"].split("/")[-1]
         if "generateContent" not in m.get("supportedGenerationMethods", []): continue
         if not n.startswith("gemini-") or "flash" not in n: continue
-        if any(x in n for x in ("lite", "image", "tts", "live", "audio", "thinking", "exp", "latest")): continue
+        if any(x in n for x in ("lite", "image", "tts", "live", "audio", "thinking", "exp", "latest", "omni")): continue
         v = tuple(int(x) for x in re.findall(r"\d+", n.split("flash")[0])) or (0,)
         cands.append((("preview" not in n), v, n))
-    print("Gemini 사용 가능 flash 후보:", sorted(c[2] for c in cands))
-    if not cands: raise RuntimeError("사용 가능한 Gemini flash 모델 없음")
-    return max(cands)[2]
+    names = [c[2] for c in sorted(cands, reverse=True)]
+    if os.getenv("GEMINI_MODEL"):
+        names.insert(0, os.environ["GEMINI_MODEL"])
+    print("Gemini 후보(시도 순서):", names)
+    return names
 
 def _gemini(prompt: str) -> str:
     key = os.environ["GEMINI_API_KEY"]
-    model = GEMINI_MODEL
     body = {"contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000}}
     last = None
-    for i in range(5):
+    for model in _models(key):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-        r = requests.post(url, headers={"x-goog-api-key": key}, json=body, timeout=180)
-        if r.status_code == 404:
-            model = _pick_model(key); print("Gemini 모델 자동 선택:", model); continue
-        if r.status_code in (429, 500, 502, 503, 504):
-            last = f"{r.status_code} {r.text[:200]}"; time.sleep(15 * (i + 1)); continue
-        r.raise_for_status()
-        parts = r.json()["candidates"][0]["content"]["parts"]
-        return "".join(p.get("text", "") for p in parts)
+        for attempt in range(3):
+            try:
+                r = requests.post(url, headers={"x-goog-api-key": key}, json=body, timeout=180)
+            except requests.RequestException as e:
+                last = f"{model}: {e}"; time.sleep(10); continue
+            if r.status_code in (429, 500, 502, 503, 504):
+                last = f"{model}: {r.status_code} {r.text[:150]}"; time.sleep(10 * (attempt + 1)); continue
+            if r.status_code != 200:
+                last = f"{model}: {r.status_code} {r.text[:150]}"; break   # 404/400 등 -> 다른 모델로
+            try:
+                parts = r.json()["candidates"][0]["content"]["parts"]
+                text = "".join(p.get("text", "") for p in parts)
+                if "{" in text:
+                    print("Gemini 사용 모델:", model); return text
+                last = f"{model}: 빈 응답"
+            except Exception as e:
+                last = f"{model}: 응답 해석 실패 {e}"
+            break
+        print("Gemini 실패, 다른 모델 시도:", last)
     raise RuntimeError(f"Gemini 호출 실패: {last}")
 
 def _claude(prompt: str) -> str:
