@@ -5,7 +5,7 @@ import brand
 API = "https://graph.threads.net/v1.0"
 
 def _publish(text, reply_to=None, image_url=None):
-    uid, tok = "me", os.environ["THREADS_ACCESS_TOKEN"]  # 토큰 주인 계정으로 게시(사용자 ID 불필요)
+    uid, tok = "me", "".join(os.environ["THREADS_ACCESS_TOKEN"].split()).strip("\"'")  # 토큰 주인 계정으로 게시(사용자 ID 불필요). 붙여넣기 중 섞인 공백·줄바꿈·따옴표는 제거
     data = {"media_type": "IMAGE" if image_url else "TEXT", "access_token": tok}
     if text:
         data["text"] = text[:500]
