@@ -23,13 +23,34 @@ PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 �
 {headlines}
 """
 
+def _pick_model(key: str) -> str:
+    """지정 모델이 404일 때: 키로 쓸 수 있는 최신 flash 모델을 자동 탐색."""
+    import re
+    r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", headers={"x-goog-api-key": key}, timeout=60)
+    r.raise_for_status()
+    cands = []
+    for m in r.json().get("models", []):
+        n = m["name"].split("/")[-1]
+        if "generateContent" not in m.get("supportedGenerationMethods", []): continue
+        if not n.startswith("gemini-") or "flash" not in n: continue
+        if any(x in n for x in ("lite", "image", "tts", "live", "audio", "thinking", "exp", "latest")): continue
+        v = tuple(int(x) for x in re.findall(r"\d+", n.split("flash")[0])) or (0,)
+        cands.append((("preview" not in n), v, n))
+    print("Gemini 사용 가능 flash 후보:", sorted(c[2] for c in cands))
+    if not cands: raise RuntimeError("사용 가능한 Gemini flash 모델 없음")
+    return max(cands)[2]
+
 def _gemini(prompt: str) -> str:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+    key = os.environ["GEMINI_API_KEY"]
+    model = GEMINI_MODEL
     body = {"contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000}}
     last = None
-    for i in range(4):
-        r = requests.post(url, headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"]}, json=body, timeout=180)
+    for i in range(5):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        r = requests.post(url, headers={"x-goog-api-key": key}, json=body, timeout=180)
+        if r.status_code == 404:
+            model = _pick_model(key); print("Gemini 모델 자동 선택:", model); continue
         if r.status_code in (429, 500, 502, 503, 504):
             last = f"{r.status_code} {r.text[:200]}"; time.sleep(15 * (i + 1)); continue
         r.raise_for_status()
