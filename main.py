@@ -45,6 +45,7 @@ def main():
     ap.add_argument("--no-threads", action="store_true")
     ap.add_argument("--no-youtube", action="store_true")
     ap.add_argument("--tts-sample", action="store_true", help="음성 후보 샘플 mp3 생성 후 종료")
+    ap.add_argument("--no-site", action="store_true")
     ap.add_argument("--no-illust", action="store_true")
     ap.add_argument("--illust-only", action="store_true", help="일러스트만 만들어 보고 종료(테스트)")
     a = ap.parse_args()
@@ -138,6 +139,14 @@ def main():
     privacy = os.getenv("YT_PRIVACY", "private")
     video_id = ""
 
+    # 썸네일(유튜브)·링크 미리보기(웹페이지): 영상 첫 화면(제목 화면, 자막 없이) 1280x720
+    from PIL import Image
+    thumb = f"{out}/thumb.jpg"
+    cards.title_frame(f"{out}/thumb_src.png", date_str, f"오늘의 핵심 이슈 {total}개", "")
+    src = Image.open(f"{out}/thumb_src.png").convert("RGB")
+    base = Image.new("RGB", src.size, "#101418"); base.paste(src, (0, 125))   # 글자를 화면 가운데로
+    base.resize((1280, 720)).save(thumb, quality=92)
+
     if not a.no_youtube and os.getenv("YT_REFRESH_TOKEN"):
         from youtube_upload import upload
         desc = f"{brand.BRAND} · {edition_name} {date_str}\n\n" + "\n".join(
@@ -147,15 +156,18 @@ def main():
             desc += f"\n사진 출처: {images.provider()}"
         # 공개 모드 + 예약 실행이면: 지금 올려 두고(처리 시간 확보) YouTube가 목표 시각에 자동 공개
         publish_at = target.isoformat() if (scheduled and privacy == "public") else None
-        # 썸네일: 영상 첫 화면(제목 화면, 자막 없이) 1280x720
-        from PIL import Image
-        thumb = f"{out}/thumb.jpg"
-        cards.title_frame(f"{out}/thumb_src.png", date_str, f"오늘의 핵심 이슈 {total}개", "")
-        src = Image.open(f"{out}/thumb_src.png").convert("RGB")
-        base = Image.new("RGB", src.size, "#101418"); base.paste(src, (0, 125))   # 글자를 화면 가운데로
-        base.resize((1280, 720)).save(thumb, quality=92)
         video_id = upload(final, f"[{date_str}] {edition_name} - 오늘의 핵심 이슈 {total}", desc, privacy, publish_at, thumb)
         print("YouTube:", video_id, f"(예약 공개 {publish_at})" if publish_at else f"({privacy})")
+
+    # 상세 웹페이지(GitHub Pages): 스레드 링크로 연결. 목표 시각 전에 미리 올려 둔다.
+    page_url = ""
+    if not a.no_site:
+        import sitepage
+        vurl = f"https://youtu.be/{video_id}" if (video_id and privacy == "public") else ""
+        page_url = sitepage.publish(out, f"{day}_{key}" + ("_test" if a.sample else ""), date_str, edition_name, data["intro"], issues,
+                                    {s_[4]: s_[5] for s_ in slides if s_[0] == "issue"}, cards.COLORS, vurl,
+                                    f"사진 출처: {images.provider()}" if used_photo else "", thumb)
+        print("웹페이지:", page_url or "(없음)")
 
     if scheduled:
         left = (target - dt.datetime.now(ZoneInfo("Asia/Seoul"))).total_seconds()
@@ -169,7 +181,7 @@ def main():
         import cardhost
         urls = cardhost.publish(f"{out}/cardnews", f"{today.strftime('%Y%m%d')}_{key}")
         print("카드 이미지 URL:", len(urls), "개")
-        print("Threads:", post_thread(date_str, data["intro"], issues, link, urls))
+        print("Threads:", post_thread(date_str, data["intro"], issues, link, urls, page_url))
 
 if __name__ == "__main__":
     main()

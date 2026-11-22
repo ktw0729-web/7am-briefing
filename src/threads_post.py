@@ -34,10 +34,16 @@ def _publish_safe(text, reply_to, image_url, image_only=False):
             print("이미지 게시 실패, 텍스트로 대체:", e)
     return _publish(text, reply_to)
 
-def post_thread(date_str, intro, issues, link="", images=None):
+def post_thread(date_str, intro, issues, link="", images=None, page_url=""):
     images = images or {}
-    head = f"📰 {date_str} {brand.current['name']}\n{intro}\n" + (f"▶ 영상: {link}\n" if link else "") + "\n" + "\n".join(
-        f"{i}. [{x['category']}] {x['title']}" for i, x in enumerate(issues, 1))
+    top = f"📰 {date_str} {brand.current['name']}\n{intro}\n" + (f"📖 전체 내용: {page_url}\n" if page_url else "") + (f"▶ 영상: {link}\n" if link else "") + "\n"
+    head = top
+    for i, x in enumerate(issues, 1):   # 500자 제한: 줄 단위로 넣고 넘치면 그만둔다
+        ln = f"{i}. [{x['category']}] {x['title']}\n"
+        if len(head) + len(ln) > 500:
+            break
+        head += ln
+    head = head.rstrip()
     root = _publish_safe(head, None, images.get("00_cover.png"))
     prev = root
     for i, x in enumerate(issues, 1):
