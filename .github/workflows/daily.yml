@@ -22,7 +22,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 240      # 일찍 시작해도 정시까지 기다릴 수 있게
+    timeout-minutes: 330      # 일찍 시작해도(최대 5시간 전) 정시까지 기다릴 수 있게 (GitHub 한도 360분)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
