@@ -130,11 +130,11 @@ def main():
     if a.dry_run:
         return
 
-    # 예약 게시: 스케줄 실행(PUBLISH_WAIT=1)은 목표 시각(07/12/21시 KST) 전에 만들어 두고 그 시각에 맞춰 게시한다.
+    # 예약 게시: 스케줄 실행(PUBLISH_WAIT=1)은 목표 시각(07/12/21시 KST) 전(최대 5시간)에 만들어 두고 그 시각에 맞춰 게시한다.
     slot = {"morning": 7, "noon": 12, "evening": 21}[key]
     target = today.replace(hour=slot, minute=0, second=0, microsecond=0)
     left = (target - dt.datetime.now(ZoneInfo("Asia/Seoul"))).total_seconds()
-    scheduled = os.getenv("PUBLISH_WAIT") == "1" and 0 < left < 10800
+    scheduled = os.getenv("PUBLISH_WAIT") == "1" and 0 < left < 18000
     privacy = os.getenv("YT_PRIVACY", "private")
     video_id = ""
 
