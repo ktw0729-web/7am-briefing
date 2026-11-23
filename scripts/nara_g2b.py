@@ -11,15 +11,17 @@ import argparse
 import os
 import sys
 import json
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 
-BASE = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService"
+BASE = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService02"  # 활용신청 상세페이지 End Point
+# 오퍼레이션명은 참고문서(1.3_261110)로 확인되지 않아 후보를 순서대로 시도한다. (성공한 이름이 출력됨)
 OPS = {
-    "용역": "getBidPblancListInfoServc",
-    "물품": "getBidPblancListInfoThng",
-    "공사": "getBidPblancListInfoCnstwk",
+    "용역": ["getBidPblancListInfoServc02", "getBidPblancListInfoServc"],
+    "물품": ["getBidPblancListInfoThng02", "getBidPblancListInfoThng"],
+    "공사": ["getBidPblancListInfoCnstwk02", "getBidPblancListInfoCnstwk"],
 }
 DEFAULT_KW = ["정보화", "소프트웨어", "SW", "AI", "클라우드", "시스템", "나라장터", "디지털"]
 
@@ -39,14 +41,36 @@ def fetch(kind, days, rows=100, key=None):
         "inqryBgnDt": bgn.strftime("%Y%m%d0000"),
         "inqryEndDt": end.strftime("%Y%m%d2359"),
     }
-    url = f"{BASE}/{OPS[kind]}?{urllib.parse.urlencode(params)}"
-    with urllib.request.urlopen(url, timeout=30) as r:
-        data = json.loads(r.read().decode("utf-8"))
-    body = data.get("response", {}).get("body", {})
-    items = body.get("items", [])
-    if isinstance(items, dict):
-        items = items.get("item", [])
-    return items if isinstance(items, list) else [items]
+    last = None
+    for op in OPS[kind]:
+        url = f"{BASE}/{op}?{urllib.parse.urlencode(params)}"
+        try:
+            with urllib.request.urlopen(url, timeout=30) as r:
+                raw = r.read().decode("utf-8")
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", "replace")[:300]
+            last = f"{op}: HTTP {e.code} {body}"
+            print(f"[시도 실패] {last}", file=sys.stderr)
+            continue
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            last = f"{op}: JSON 아님 -> {raw[:300]}"
+            print(f"[시도 실패] {last}", file=sys.stderr)
+            continue
+        resp = data.get("response", data)
+        code = str(resp.get("header", {}).get("resultCode", "00"))
+        if code not in ("00", "0"):
+            last = f"{op}: resultCode={code} {resp.get('header', {}).get('resultMsg', '')}"
+            print(f"[시도 실패] {last}", file=sys.stderr)
+            continue
+        print(f"[오퍼레이션] {op}", file=sys.stderr)
+        body = resp.get("body", {})
+        items = body.get("items", [])
+        if isinstance(items, dict):
+            items = items.get("item", [])
+        return items if isinstance(items, list) else [items]
+    sys.exit(f"{kind} 조회 실패: {last}")
 
 
 def summarize(items, kws):

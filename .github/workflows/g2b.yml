@@ -28,6 +28,7 @@ jobs:
           G2B_SERVICE_KEY: ${{ secrets.G2B_SERVICE_KEY }}
           DAYS: ${{ github.event.inputs.days || '1' }}
         run: |
+          set -o pipefail
           if [ -z "$G2B_SERVICE_KEY" ]; then
             echo "::warning::G2B_SERVICE_KEY 시크릿이 없어 건너뜁니다."
             exit 0
