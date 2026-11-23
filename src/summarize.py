@@ -1,9 +1,12 @@
 """분야별 이슈 10개 선정 + 요약 + 나레이션 대본 생성. GEMINI_API_KEY가 있으면 Gemini(무료 티어), 없으면 Claude 사용."""
-import json, os, time, requests
+import json, os, re, time, requests
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5-5")
 
 PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 포함)이다.
+오늘 날짜는 {today_kr}(한국시간)이다. 날짜를 언급해야 한다면 반드시 이 날짜만 쓰고, 헤드라인 속 다른 날짜나 추측한 날짜는 쓰지 말 것.
 이번 판은 [{edition}판]이다. 같은 사건을 다룬 기사는 하나로 묶어, 분야가 고르게 섞이도록 오늘의 핵심 이슈 {n}개를 골라라.
 
 규칙:
@@ -80,7 +83,20 @@ def summarize(news: dict, n: int = 10, edition: str = "아침", edition_name: st
     for cat, items in news.items():
         for it in items:
             lines.append(f"[{cat}] {it['title']}")
-    prompt = PROMPT.format(n=n, edition=edition, edition_name=edition_name, covered=("; ".join(covered) or "없음"), headlines="\n".join(lines))
+    now = datetime.now(ZoneInfo("Asia/Seoul"))
+    today_kr = f"{now.year}년 {now.month}월 {now.day}일"
+    prompt = PROMPT.format(today_kr=today_kr, n=n, edition=edition, edition_name=edition_name, covered=("; ".join(covered) or "없음"), headlines="\n".join(lines))
     text = (_gemini(prompt) if os.getenv("GEMINI_API_KEY") else _claude(prompt)).strip()
     text = text[text.find("{"): text.rfind("}") + 1]
-    return json.loads(text)
+    data = json.loads(text)
+    return _fix_dates(data, now)
+
+def _fix_dates(data, now):
+    """생성 글에 오늘이 아닌 'N월 M일'이 들어가면 오늘 날짜로 바로잡는다."""
+    pat = re.compile(r"(\d{1,2})월\s*(\d{1,2})일")
+    def fix(t):
+        if not isinstance(t, str): return t
+        return pat.sub(lambda m: m.group(0) if (int(m.group(1)), int(m.group(2))) == (now.month, now.day) else f"{now.month}월 {now.day}일", t)
+    for k in ("intro", "outro"):
+        if k in data: data[k] = fix(data[k])
+    return data
