@@ -1,9 +1,10 @@
 name: g2b-bids
-# 나라장터 입찰공고 조회 (키워드 매칭). 기존 daily-news(게시 파이프라인)와 분리된 워크플로.
+# 나라장터 입찰공고 조회: 수요기관이 조달청 본청 또는 대전광역시인 공고만.
+# 결과는 g2b/latest.md 로 커밋(아침 브리핑이 읽어감). 기존 daily-news(게시 파이프라인)와 분리.
 # 사전 준비: Settings > Secrets and variables > Actions 에 G2B_SERVICE_KEY 등록
 on:
   schedule:
-    - cron: "30 20 * * *"    # 한국 05:30 (UTC 20:30)
+    - cron: "0 20 * * *"     # 한국 05:00 (UTC 20:00). GitHub 지연을 감안해 브리핑보다 일찍 실행
   workflow_dispatch:
     inputs:
       days:
@@ -11,14 +12,14 @@ on:
         required: false
         default: '1'
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: g2b-bids
   cancel-in-progress: false
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,18 +31,15 @@ jobs:
         run: |
           set -o pipefail
           if [ -z "$G2B_SERVICE_KEY" ]; then
-            echo "::warning::G2B_SERVICE_KEY 시크릿이 없어 건너뜁니다."
-            exit 0
+            echo "::error::G2B_SERVICE_KEY 시크릿이 없습니다."
+            exit 1
           fi
-          mkdir -p out
-          for kind in 용역 공사 물품; do
-            echo "## $kind" | tee -a out/g2b.md
-            python scripts/nara_g2b.py --kind "$kind" --days "$DAYS" | tee -a out/g2b.md
-          done
-          cat out/g2b.md >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: g2b-bids
-          path: out/
-          if-no-files-found: ignore
+          mkdir -p g2b
+          python scripts/nara_g2b.py --days "$DAYS" --format md | tee g2b/latest.md
+          cat g2b/latest.md >> "$GITHUB_STEP_SUMMARY"
+      - name: 결과 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add g2b/latest.md
+          git diff --cached --quiet || (git commit -m "g2b $(date -u +%FT%H)" && git pull --rebase -q && git push)

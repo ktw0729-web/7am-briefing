@@ -1,55 +1,41 @@
-"""나라장터 입찰공고 조회 (공공데이터포털 '조달청_나라장터 입찰공고정보서비스').
+"""나라장터 입찰공고 조회 (공공데이터포털 '조달청_나라장터 입찰공고정보서비스', End Point .../BidPublicInfoService02).
+
+수요기관이 '조달청'(본청) 또는 '대전광역시'(본청)인 공고만 출력한다. (정확히 일치; 지방조달청·자치구·교육청 등은 제외)
 
 사용법:
-    export G2B_SERVICE_KEY="발급받은_일반인증키(Decoding)"
-    python nara_g2b.py            # 어제~오늘 게시된 용역 공고 중 키워드 매칭 출력
-    python nara_g2b.py --days 3 --kind 공사 --kw 대전
-
-주의: 엔드포인트/파라미터는 data.go.kr 활용신청 상세페이지의 '참고문서'와 다르면 그쪽을 따를 것.
+    export G2B_SERVICE_KEY="일반인증키(Decoding)"
+    python scripts/nara_g2b.py --days 1 --format md
 """
 import argparse
+import json
 import os
 import sys
-import json
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
-BASE = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService02"  # 활용신청 상세페이지 End Point
-# 오퍼레이션명은 참고문서(1.3_261110)로 확인되지 않아 후보를 순서대로 시도한다. (성공한 이름이 출력됨)
+BASE = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService02"
 OPS = {
     "용역": ["getBidPblancListInfoServc02", "getBidPblancListInfoServc"],
     "물품": ["getBidPblancListInfoThng02", "getBidPblancListInfoThng"],
     "공사": ["getBidPblancListInfoCnstwk02", "getBidPblancListInfoCnstwk"],
 }
-DEFAULT_KW = ["정보화", "소프트웨어", "SW", "AI", "클라우드", "시스템", "나라장터", "디지털"]
+ORGS = {"조달청", "대전광역시"}
+KST = timezone(timedelta(hours=9))
+ROWS = 999
+MAX_PAGES = 30
 
 
-def fetch(kind, days, rows=100, key=None):
-    key = key or os.environ.get("G2B_SERVICE_KEY")
-    if not key:
-        sys.exit("환경변수 G2B_SERVICE_KEY 가 없습니다.")
-    end = datetime.now()
-    bgn = end - timedelta(days=days)
-    params = {
-        "serviceKey": key,          # Decoding 키를 넣으면 urlencode가 인코딩함
-        "pageNo": 1,
-        "numOfRows": rows,
-        "type": "json",
-        "inqryDiv": 1,              # 1=공고게시일시 기준
-        "inqryBgnDt": bgn.strftime("%Y%m%d0000"),
-        "inqryEndDt": end.strftime("%Y%m%d2359"),
-    }
+def _call(kind, params):
     last = None
     for op in OPS[kind]:
         url = f"{BASE}/{op}?{urllib.parse.urlencode(params)}"
         try:
-            with urllib.request.urlopen(url, timeout=30) as r:
+            with urllib.request.urlopen(url, timeout=60) as r:
                 raw = r.read().decode("utf-8")
         except urllib.error.HTTPError as e:
-            body = e.read().decode("utf-8", "replace")[:300]
-            last = f"{op}: HTTP {e.code} {body}"
+            last = f"{op}: HTTP {e.code} {e.read().decode('utf-8', 'replace')[:300]}"
             print(f"[시도 실패] {last}", file=sys.stderr)
             continue
         try:
@@ -59,47 +45,96 @@ def fetch(kind, days, rows=100, key=None):
             print(f"[시도 실패] {last}", file=sys.stderr)
             continue
         resp = data.get("response", data)
-        code = str(resp.get("header", {}).get("resultCode", "00"))
-        if code not in ("00", "0"):
-            last = f"{op}: resultCode={code} {resp.get('header', {}).get('resultMsg', '')}"
+        hdr = resp.get("header", {})
+        if str(hdr.get("resultCode", "00")) not in ("00", "0"):
+            last = f"{op}: resultCode={hdr.get('resultCode')} {hdr.get('resultMsg', '')}"
             print(f"[시도 실패] {last}", file=sys.stderr)
             continue
-        print(f"[오퍼레이션] {op}", file=sys.stderr)
         body = resp.get("body", {})
         items = body.get("items", [])
         if isinstance(items, dict):
             items = items.get("item", [])
-        return items if isinstance(items, list) else [items]
+        if not isinstance(items, list):
+            items = [items]
+        OPS[kind] = [op]  # 성공한 이름만 이후 페이지에 사용
+        return items, int(body.get("totalCount", 0) or 0)
     sys.exit(f"{kind} 조회 실패: {last}")
 
 
-def summarize(items, kws):
-    out = []
+def fetch_all(kind, days, key):
+    end = datetime.now(KST)
+    bgn = end - timedelta(days=days)
+    out, page, total = [], 1, None
+    while page <= MAX_PAGES:
+        params = {
+            "serviceKey": key, "pageNo": page, "numOfRows": ROWS, "type": "json",
+            "inqryDiv": 1,  # 1=공고게시일시 기준
+            "inqryBgnDt": bgn.strftime("%Y%m%d%H%M"),
+            "inqryEndDt": end.strftime("%Y%m%d%H%M"),
+        }
+        items, total = _call(kind, params)
+        out += items
+        if not items or len(out) >= total:
+            break
+        page += 1
+    print(f"[{kind}] 전체 {total}건 중 {len(out)}건 조회", file=sys.stderr)
+    return out
+
+
+def org_of(it):
+    return (it.get("dminsttNm") or it.get("ntceInsttNm") or "").strip()
+
+
+def select(items):
+    rows = []
     for it in items:
-        name = it.get("bidNtceNm", "")
-        if kws and not any(k.lower() in name.lower() for k in kws):
+        org = org_of(it)
+        if org not in ORGS:
             continue
-        out.append({
+        rows.append({
+            "수요기관": org,
             "공고번호": f"{it.get('bidNtceNo', '')}-{it.get('bidNtceOrd', '')}",
-            "사업명": name,
-            "수요기관": it.get("dminsttNm") or it.get("ntceInsttNm", ""),
-            "추정가격": it.get("presmptPrce", ""),
+            "사업명": (it.get("bidNtceNm") or "").strip(),
+            "추정가격": it.get("presmptPrce") or "",
             "공고일시": it.get("bidNtceDt", ""),
             "입찰마감": it.get("bidClseDt", ""),
             "개찰일시": it.get("opengDt", ""),
             "링크": it.get("bidNtceDtlUrl", ""),
         })
-    return out
+    return sorted(rows, key=lambda r: r["공고일시"])
+
+
+def money(v):
+    try:
+        return f"{int(float(v)):,}원"
+    except (TypeError, ValueError):
+        return "비공개/미기재"
+
+
+def to_md(results, days):
+    now = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
+    lines = [f"# 나라장터 공고 (조달청 본청·대전광역시 수요) — 최근 {days}일, 조회 {now} KST", ""]
+    for kind, rows in results.items():
+        lines.append(f"## {kind} ({len(rows)}건)")
+        if not rows:
+            lines.append("- 해당 공고 없음")
+        for r in rows:
+            lines.append(
+                f"- [{r['수요기관']}] {r['사업명']} / 공고번호 {r['공고번호']} / {money(r['추정가격'])}"
+                f" / 마감 {r['입찰마감'] or '-'} / 개찰 {r['개찰일시'] or '-'}"
+                + (f" / {r['링크']}" if r["링크"] else ""))
+        lines.append("")
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--kind", choices=OPS, default="용역")
     ap.add_argument("--days", type=int, default=1)
-    ap.add_argument("--kw", nargs="*", default=DEFAULT_KW)
+    ap.add_argument("--format", choices=["md", "json"], default="md")
     a = ap.parse_args()
-    res = summarize(fetch(a.kind, a.days), a.kw)
-    if not res:
-        print("신규 매칭 공고 없음")
-    for r in res:
-        print(json.dumps(r, ensure_ascii=False))
+    key = os.environ.get("G2B_SERVICE_KEY") or sys.exit("환경변수 G2B_SERVICE_KEY 가 없습니다.")
+    results = {k: select(fetch_all(k, a.days, key)) for k in ("용역", "물품", "공사")}
+    if a.format == "json":
+        print(json.dumps(results, ensure_ascii=False, indent=1))
+    else:
+        print(to_md(results, a.days))
