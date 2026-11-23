@@ -1,0 +1,46 @@
+name: g2b-bids
+# 나라장터 입찰공고 조회 (키워드 매칭). 기존 daily-news(게시 파이프라인)와 분리된 워크플로.
+# 사전 준비: Settings > Secrets and variables > Actions 에 G2B_SERVICE_KEY 등록
+on:
+  schedule:
+    - cron: "30 20 * * *"    # 한국 05:30 (UTC 20:30)
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '최근 N일 게시분 조회'
+        required: false
+        default: '1'
+permissions:
+  contents: read
+concurrency:
+  group: g2b-bids
+  cancel-in-progress: false
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: 나라장터 입찰공고 조회
+        env:
+          G2B_SERVICE_KEY: ${{ secrets.G2B_SERVICE_KEY }}
+          DAYS: ${{ github.event.inputs.days || '1' }}
+        run: |
+          if [ -z "$G2B_SERVICE_KEY" ]; then
+            echo "::warning::G2B_SERVICE_KEY 시크릿이 없어 건너뜁니다."
+            exit 0
+          fi
+          mkdir -p out
+          for kind in 용역 공사 물품; do
+            echo "## $kind" | tee -a out/g2b.md
+            python scripts/nara_g2b.py --kind "$kind" --days "$DAYS" | tee -a out/g2b.md
+          done
+          cat out/g2b.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: g2b-bids
+          path: out/
+          if-no-files-found: ignore
