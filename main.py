@@ -54,6 +54,9 @@ def main():
     # 하루 3판: 아침(07시) / 점심(12시) / 저녁(21시). 실행 시각(KST)으로 판을 정한다. EDITION 환경변수로 강제 가능.
     key = os.getenv("EDITION") or ("morning" if today.hour < 11 else "noon" if today.hour < 17 else "evening")
     edition, edition_name = brand.EDITIONS[key]
+    flag = os.path.join("history", f"posted_{today:%Y-%m-%d}_{key}.flag")
+    if os.getenv("DEDUP") == "1" and os.path.exists(flag):
+        print(f"{today:%Y-%m-%d} {key}판은 이미 게시됨 -> 건너뜀"); return
     brand.current["name"] = edition_name
     date_str = f"{today.year}.{today.month}.{today.day}"
     day = today.strftime("%Y-%m-%d")
@@ -182,6 +185,7 @@ def main():
         urls = cardhost.publish(f"{out}/cardnews", f"{today.strftime('%Y%m%d')}_{key}")
         print("카드 이미지 URL:", len(urls), "개")
         print("Threads:", post_thread(date_str, data["intro"], issues, link, urls, page_url))
+        os.makedirs("history", exist_ok=True); open(flag, "w").write(dt.datetime.now(ZoneInfo("Asia/Seoul")).isoformat())
 
 if __name__ == "__main__":
     main()
