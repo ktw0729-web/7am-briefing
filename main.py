@@ -57,6 +57,11 @@ def main():
     flag = os.path.join("history", f"posted_{today:%Y-%m-%d}_{key}.flag")
     if os.getenv("DEDUP") == "1" and os.path.exists(flag):
         print(f"{today:%Y-%m-%d} {key}판은 이미 게시됨 -> 건너뜀"); return
+    if os.getenv("DEDUP") == "1":   # 스케줄이 몇 시간 늦게 도착한 경우(GitHub 지연) 엉뚱한 시간대에 올리지 않고 건너뜀
+        slot_ = {"morning": 7, "noon": 12, "evening": 21}[key]
+        late_min = today.hour * 60 + today.minute - slot_ * 60
+        if late_min > 150:
+            print(f"{key}판 목표({slot_}시)보다 {late_min}분 늦게 시작됨 -> 게시하지 않고 건너뜀"); return
     brand.current["name"] = edition_name
     date_str = f"{today.year}.{today.month}.{today.day}"
     day = today.strftime("%Y-%m-%d")
