@@ -2,7 +2,7 @@
 사용:  python main.py --dry-run        # 게시·업로드 없이 영상까지만
        python main.py --sample         # 뉴스/Claude 없이 샘플 데이터로 테스트
 """
-import argparse, datetime as dt, json, os, re, sys, time
+import argparse, glob, datetime as dt, json, os, re, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
 import cards, cardnews, tts, video, images, brand, illust
@@ -182,9 +182,22 @@ def main():
         from threads_post import post_thread
         link = f"https://youtu.be/{video_id}" if (video_id and privacy == "public") else ""
         import cardhost
-        urls = cardhost.publish(f"{out}/cardnews", f"{today.strftime('%Y%m%d')}_{key}")
+        cdir = f"{out}/cardnews"
+        if os.getenv("IG_ACCESS_TOKEN"):   # 인스타는 JPEG만 허용 → 같은 카드의 jpg 사본을 함께 올림
+            from PIL import Image
+            for f_ in sorted(glob.glob(f"{cdir}/*.png")):
+                Image.open(f_).convert("RGB").save(f_[:-4] + ".jpg", quality=92)
+        urls = cardhost.publish(cdir, f"{today.strftime('%Y%m%d')}_{key}", ["ill*.png", "[0-9]*.png", "*_cover.png", "*.jpg"])
         print("카드 이미지 URL:", len(urls), "개")
         print("Threads:", post_thread(date_str, data["intro"], issues, link, urls, page_url))
+        if os.getenv("IG_ACCESS_TOKEN") and os.getenv("IG_USER_ID"):
+            try:
+                import instagram_post
+                jp = [urls[k] for k in sorted(urls) if k.endswith(".jpg")]
+                cap = instagram_post.build_caption(date_str, brand.current["name"], data["intro"], issues, page_url, link)
+                print("Instagram:", instagram_post.post_carousel(jp, cap))
+            except Exception as e:
+                print("Instagram 게시 실패(무시):", e)
         os.makedirs("history", exist_ok=True); open(flag, "w").write(dt.datetime.now(ZoneInfo("Asia/Seoul")).isoformat())
 
 if __name__ == "__main__":

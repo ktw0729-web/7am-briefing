@@ -59,6 +59,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}   # 무료 요약용. (ANTHROPIC_API_KEY를 다시 넣으면 Claude 일러스트 생성이 켜짐 = 유료)
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: "17841475244640305"
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
