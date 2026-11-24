@@ -193,7 +193,7 @@ def main():
         if os.getenv("IG_ACCESS_TOKEN") and os.getenv("IG_USER_ID"):
             try:
                 import instagram_post
-                jp = [urls[k] for k in sorted(urls) if k.endswith(".jpg")]
+                jp = [urls[k] for k in sorted(urls) if k.endswith(".jpg") and not k.startswith("99_")][:10]   # 표지+이슈 9개(안내 카드·10번째 이슈는 캡션으로 대체)
                 cap = instagram_post.build_caption(date_str, brand.current["name"], data["intro"], issues, page_url, link)
                 print("Instagram:", instagram_post.post_carousel(jp, cap))
             except Exception as e:
