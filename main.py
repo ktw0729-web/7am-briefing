@@ -245,7 +245,7 @@ def main():
                     "video_id": video_id, "urls": urls, "date_str": date_str, "edition_name": edition_name,
                     "intro": data["intro"], "issues": issues, "page_url": page_url}
             os.makedirs("pending", exist_ok=True); os.makedirs("history", exist_ok=True)
-            for pp in ("pending/pending.json", pend_mark):
+            for pp in (("pending/pending.json",) if a.sample else ("pending/pending.json", pend_mark)):   # 샘플 테스트는 정기 실행을 막는 표시 파일을 남기지 않음
                 json.dump(pend, open(pp, "w", encoding="utf-8"), ensure_ascii=False)
             print("승인 대기 상태로 저장:", pend_mark); return
         print("Threads:", post_thread(date_str, data["intro"], issues, link, urls, page_url))
