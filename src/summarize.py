@@ -45,7 +45,7 @@ def _models(key: str) -> list:
     print("Gemini 후보(시도 순서):", names)
     return names
 
-def _gemini(prompt: str) -> str:
+def _gemini_once(prompt: str) -> str:
     key = os.environ["GEMINI_API_KEY"]
     body = {"contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000}}
@@ -72,6 +72,18 @@ def _gemini(prompt: str) -> str:
             break
         print("Gemini 실패, 다른 모델 시도:", last)
     raise RuntimeError(f"Gemini 호출 실패: {last}")
+
+def _gemini(prompt: str) -> str:
+    """전 모델이 과부하(503)일 수 있어, 전체 후보 순회를 최대 5회 반복한다(회차 사이 90초 대기)."""
+    err = None
+    for rnd in range(5):
+        try:
+            return _gemini_once(prompt)
+        except RuntimeError as e:
+            err = e
+            if rnd < 4:
+                print(f"Gemini 전체 후보 실패({rnd+1}/5회차) -> 90초 후 재시도"); time.sleep(90)
+    raise err
 
 def _claude(prompt: str) -> str:
     import anthropic

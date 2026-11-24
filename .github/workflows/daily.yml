@@ -24,11 +24,13 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: daily-news
+  group: daily-news-${{ github.run_id }}   # 승인 대기 중인 실행이 다른 판을 막지 않도록 실행별로 분리(중복은 history의 pending/flag 파일로 방지)
   cancel-in-progress: false
 jobs:
   run:
     runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.chk.outputs.ready }}
     timeout-minutes: 330      # 일찍 시작해도(최대 5시간 전) 정시까지 기다릴 수 있게 (GitHub 한도 360분)
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +55,7 @@ jobs:
             *) e="";;
           esac
           echo "e=$e" >> "$GITHUB_OUTPUT"
-      - run: python main.py ${{ github.event.inputs.args }}
+      - run: python main.py --stage prepare ${{ github.event.inputs.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}   # 무료 요약용. (ANTHROPIC_API_KEY를 다시 넣으면 Claude 일러스트 생성이 켜짐 = 유료)
@@ -80,3 +82,42 @@ jobs:
         with: { name: news-output, path: out/ }
       - uses: actions/upload-artifact@v4
         with: { name: cardnews, path: "out/*/cardnews/" }
+      - name: 승인 대기 상태 확인
+        id: chk
+        run: |
+          if [ -f pending/pending.json ]; then echo "ready=true" >> "$GITHUB_OUTPUT"; else echo "ready=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/upload-artifact@v4
+        if: steps.chk.outputs.ready == 'true'
+        with: { name: pending, path: pending/ }
+
+  publish:
+    # 승인(Environment 'production'의 Required reviewers) 후에만 실행: 유튜브 공개 + Threads + 인스타 게시
+    needs: run
+    if: needs.run.outputs.ready == 'true' && (github.event_name == 'schedule' || github.event.inputs.public == 'yes')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with: { name: pending, path: pending/ }
+      - run: git pull --rebase -q
+      - run: python main.py --stage publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: "17841475244640305"
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      - name: Save history (게시 기록)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A history || true
+          git diff --cached --quiet || (git commit -m "published $(date -u +%FT%H)" && git pull --rebase -q && git push)
