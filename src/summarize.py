@@ -20,7 +20,7 @@ PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 �
 - 각 이슈: category(경제/산업/국제/기술/사회), title(20자 내외), subtitle(핵심 쟁점 한 줄, 40자 내외),
   summary(스레드용 2~3문장, 200자 이내), narration(음성용 구어체. 2~3개 단락으로 나누고 단락 사이는 빈 줄(\\n\\n)로 구분. 단락마다 하나의 포인트: 무슨 일/왜 중요한가/앞으로 볼 점. 전체 4~6문장),
   sources(참고한 언론사 이름 목록),
-  image_keywords(이슈를 상징하는 일반적인 사진 검색어 영어 2개, 예: ["stock market", "city skyline"]. 실존 인물·브랜드·로고 금지)
+  image_keywords(이슈 내용과 직접 맞는 사진 검색어 영어 2~3개. 장소·주제를 구체적으로 쓰고 한국 이슈는 "South Korea"/"Seoul"/"Sejong" 등을 붙일 것. 예: 세종 청사 이전이면 ["Sejong city government complex Korea", "Korean government office building"], 증시면 ["stock market chart", "Seoul skyline"]. "government", "parliament", "flag" 같은 포괄 단어만 단독으로 쓰지 말 것(외국 국회·국기 사진이 나옴). 실존 인물·브랜드·로고·국기 금지)
 - 추가로 intro(오프닝 멘트 1~2문장(“안녕하세요, {edition_name}입니다”로 시작))와 outro(마무리 1문장) 작성.
 - 오직 JSON만 출력: {{"intro": "", "outro": "", "issues": [ ... ]}}
 
