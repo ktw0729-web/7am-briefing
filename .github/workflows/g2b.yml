@@ -4,7 +4,10 @@ name: g2b-bids
 # 사전 준비: Settings > Secrets and variables > Actions 에 G2B_SERVICE_KEY 등록
 on:
   schedule:
-    - cron: "0 20 * * *"     # 한국 05:00 (UTC 20:00). GitHub 지연을 감안해 브리핑보다 일찍 실행
+    # 브리핑(06:20 KST) 전에 끝나도록 일찍, 그리고 GitHub가 가장 붐비는 정각(분=0)을 피해 2회 실행한다.
+    # (정각 cron이 7~8시간씩 지연된 사례가 있었음. 지연은 완전히 막을 수 없다.)
+    - cron: "37 17 * * *"    # 한국 02:37 (UTC 17:37)
+    - cron: "47 19 * * *"    # 한국 04:47 (UTC 19:47) — 위 실행이 밀렸을 때를 대비한 예비
   workflow_dispatch:
     inputs:
       days:
