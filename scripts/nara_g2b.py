@@ -1,6 +1,7 @@
 """나라장터 입찰공고 조회 (공공데이터포털 '조달청_나라장터 입찰공고정보서비스', End Point .../BidPublicInfoService02).
 
 수요기관이 '조달청'(본청) 또는 '대전광역시'(본청)인 공고를 출력한다. (정확히 일치; 지방조달청·자치구·교육청 등은 제외)
+물품(물품계약) 공고는 조회·출력하지 않는다(용역·공사만).
 추가로 전국 모든 수요기관의 '대형 SI·SM 용역'(사업명 키워드 + 추정금액 30억 원 이상)을 별도 구역으로 출력한다.
 
 사용법:
@@ -186,7 +187,7 @@ if __name__ == "__main__":
     ap.add_argument("--format", choices=["md", "json"], default="md")
     a = ap.parse_args()
     key = os.environ.get("G2B_SERVICE_KEY") or sys.exit("환경변수 G2B_SERVICE_KEY 가 없습니다.")
-    raw = {k: fetch_all(k, a.days, key) for k in ("용역", "물품", "공사")}
+    raw = {k: fetch_all(k, a.days, key) for k in ("용역", "공사")}  # 물품(물품계약)은 제외
     results = {k: select(v) for k, v in raw.items()}
     shown = {r["공고번호"] for rows in results.values() for r in rows}
     results[SISM_TITLE] = select_sism(raw["용역"], shown)
