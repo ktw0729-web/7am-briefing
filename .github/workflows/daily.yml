@@ -21,6 +21,10 @@ on:
         description: 'yes면 수동 실행도 공개로 게시'
         required: false
         default: ''
+      timed:
+        description: 'yes면 정기 실행처럼 동작(외부 스케줄러용: 중복·지연 방지, 정시 게시)'
+        required: false
+        default: ''
 permissions:
   contents: write
 concurrency:
@@ -69,9 +73,9 @@ jobs:
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           EDITION: ${{ steps.ed.outputs.e }}   # 정기 실행은 크론으로 판을 확정(일찍/늦게 시작해도 판 오분류 방지)
-          DEDUP: ${{ github.event_name == 'schedule' && '1' || '' }}   # 정기 실행은 이미 게시된 판이면 건너뜀
+          DEDUP: ${{ (github.event_name == 'schedule' || github.event.inputs.timed == 'yes') && '1' || '' }}   # 정기 실행은 이미 게시된 판이면 건너뜀
           PUBLISH_WAIT: ${{ github.event_name == 'schedule' && '1' || '' }}
-          YT_PRIVACY: ${{ (github.event_name == 'schedule' || github.event.inputs.public == 'yes') && 'public' || 'private' }}   # 정기 실행은 공개(예약 시각에 자동 공개), 수동 실행은 비공개 테스트
+          YT_PRIVACY: ${{ (github.event_name == 'schedule' || github.event.inputs.timed == 'yes' || github.event.inputs.public == 'yes') && 'public' || 'private' }}   # 정기 실행은 공개(예약 시각에 자동 공개), 수동 실행은 비공개 테스트
       - name: Save history (오늘 다룬 이슈 기록)
         run: |
           git config user.name "github-actions[bot]"
@@ -93,7 +97,7 @@ jobs:
   publish:
     # 승인(Environment 'production'의 Required reviewers) 후에만 실행: 유튜브 공개 + Threads + 인스타 게시
     needs: run
-    if: needs.run.outputs.ready == 'true' && (github.event_name == 'schedule' || github.event.inputs.public == 'yes')
+    if: needs.run.outputs.ready == 'true' && (github.event_name == 'schedule' || github.event.inputs.timed == 'yes' || github.event.inputs.public == 'yes')
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 330
