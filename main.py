@@ -102,8 +102,8 @@ def main():
     if os.getenv("DEDUP") == "1":   # 스케줄이 몇 시간 늦게 도착한 경우(GitHub 지연) 엉뚱한 시간대에 올리지 않고 건너뜀
         slot_ = {"morning": 7, "noon": 12, "evening": 21}[key]
         late_min = today.hour * 60 + today.minute - slot_ * 60
-        if late_min > 150:
-            print(f"{key}판 목표({slot_}시)보다 {late_min}분 늦게 시작됨 -> 게시하지 않고 건너뜀"); return
+        if late_min > 150 or late_min < -120:   # 너무 늦게/너무 일찍(전날 판의 지연 도착 등) 시작된 실행은 건너뜀
+            print(f"{key}판 목표({slot_}시) 대비 {late_min}분 차이로 시작됨 -> 게시하지 않고 건너뜀"); return
     brand.current["name"] = edition_name
     date_str = f"{today.year}.{today.month}.{today.day}"
     day = today.strftime("%Y-%m-%d")
