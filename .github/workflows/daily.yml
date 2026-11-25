@@ -1,9 +1,16 @@
 name: daily-news
 on:
   schedule:                  # UTC 기준 (한국시간 = UTC+9). 게시 목표보다 1시간 먼저 시작해 만들어 두고 정시에 게시
+    # GitHub 예약 실행은 가끔 통째로 누락되므로 판마다 3번 시도한다(이미 게시된 판은 건너뜀: history/posted_*.flag)
     - cron: "0 21 * * *"     # 한국 06:00 시작 -> 07:00 아침판 정시 게시 (지연 대비 1시간 여유)
+    - cron: "30 21 * * *"    # 한국 06:30 (보조)
+    - cron: "10 22 * * *"    # 한국 07:10 (보조: 앞선 시도가 모두 누락됐을 때 늦게라도 게시)
     - cron: "0 2 * * *"      # 한국 11:00 시작 -> 12:00 점심판 정시 게시
+    - cron: "30 2 * * *"     # 한국 11:30 (보조)
+    - cron: "10 3 * * *"     # 한국 12:10 (보조)
     - cron: "0 11 * * *"     # 한국 20:00 시작 -> 21:00 저녁판 정시 게시
+    - cron: "30 11 * * *"    # 한국 20:30 (보조)
+    - cron: "10 12 * * *"    # 한국 21:10 (보조)
   workflow_dispatch:
     inputs:
       args:
@@ -17,11 +24,13 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: daily-news
+  group: daily-news-${{ github.run_id }}   # 승인 대기 중인 실행이 다른 판을 막지 않도록 실행별로 분리(중복은 history의 pending/flag 파일로 방지)
   cancel-in-progress: false
 jobs:
   run:
     runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.chk.outputs.ready }}
     timeout-minutes: 330      # 일찍 시작해도(최대 5시간 전) 정시까지 기다릴 수 있게 (GitHub 한도 360분)
     steps:
       - uses: actions/checkout@v4
@@ -36,18 +45,31 @@ jobs:
             echo "apt 재시도 $i"; sleep 5
           done
       - run: pip install -r requirements.txt
-      - run: python main.py ${{ github.event.inputs.args }}
+      - id: ed
+        name: 판 확정 (크론 시각 -> 아침/점심/저녁)
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 21 * * *"|"30 21 * * *"|"10 22 * * *") e=morning;;
+            "0 2 * * *"|"30 2 * * *"|"10 3 * * *") e=noon;;
+            "0 11 * * *"|"30 11 * * *"|"10 12 * * *") e=evening;;
+            *) e="";;
+          esac
+          echo "e=$e" >> "$GITHUB_OUTPUT"
+      - run: python main.py --stage prepare ${{ github.event.inputs.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}   # 무료 요약용. (ANTHROPIC_API_KEY를 다시 넣으면 Claude 일러스트 생성이 켜짐 = 유료)
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: "17841475244640305"
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
-          EDITION: ${{ github.event.schedule == '0 21 * * *' && 'morning' || github.event.schedule == '0 2 * * *' && 'noon' || github.event.schedule == '0 11 * * *' && 'evening' || '' }}   # 정기 실행은 크론으로 판을 확정(일찍/늦게 시작해도 판 오분류 방지)
+          EDITION: ${{ steps.ed.outputs.e }}   # 정기 실행은 크론으로 판을 확정(일찍/늦게 시작해도 판 오분류 방지)
+          DEDUP: ${{ github.event_name == 'schedule' && '1' || '' }}   # 정기 실행은 이미 게시된 판이면 건너뜀
           PUBLISH_WAIT: ${{ github.event_name == 'schedule' && '1' || '' }}
           YT_PRIVACY: ${{ (github.event_name == 'schedule' || github.event.inputs.public == 'yes') && 'public' || 'private' }}   # 정기 실행은 공개(예약 시각에 자동 공개), 수동 실행은 비공개 테스트
       - name: Save history (오늘 다룬 이슈 기록)
@@ -60,3 +82,42 @@ jobs:
         with: { name: news-output, path: out/ }
       - uses: actions/upload-artifact@v4
         with: { name: cardnews, path: "out/*/cardnews/" }
+      - name: 승인 대기 상태 확인
+        id: chk
+        run: |
+          if [ -f pending/pending.json ]; then echo "ready=true" >> "$GITHUB_OUTPUT"; else echo "ready=false" >> "$GITHUB_OUTPUT"; fi
+      - uses: actions/upload-artifact@v4
+        if: steps.chk.outputs.ready == 'true'
+        with: { name: pending, path: pending/ }
+
+  publish:
+    # 승인(Environment 'production'의 Required reviewers) 후에만 실행: 유튜브 공개 + Threads + 인스타 게시
+    needs: run
+    if: needs.run.outputs.ready == 'true' && (github.event_name == 'schedule' || github.event.inputs.public == 'yes')
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with: { name: pending, path: pending/ }
+      - run: git pull --rebase -q
+      - run: python main.py --stage publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_TOKEN }}
+          IG_USER_ID: "17841475244640305"
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      - name: Save history (게시 기록)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A history || true
+          git diff --cached --quiet || (git commit -m "published $(date -u +%FT%H)" && git pull --rebase -q && git push)

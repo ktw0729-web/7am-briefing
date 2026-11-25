@@ -1,0 +1,12 @@
+name: ig-check
+on: workflow_dispatch
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: IG token check
+        env:
+          T: ${{ secrets.IG_TOKEN }}
+        run: |
+          if [ -z "$T" ]; then echo "IG_TOKEN 시크릿 없음"; exit 1; fi
+          curl -s "https://graph.facebook.com/v21.0/17841475244640305?fields=username,media_count&access_token=$(echo -n "$T" | tr -d ' \r\n')"

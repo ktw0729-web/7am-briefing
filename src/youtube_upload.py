@@ -27,3 +27,12 @@ def upload(path, title, description, privacy="private", publish_at=None, thumbna
         except Exception as e:
             print("썸네일 설정 실패(자동 썸네일 사용):", e)
     return resp["id"]
+
+
+def make_public(video_id):
+    """승인 후 비공개 영상을 공개로 전환."""
+    creds = Credentials(None, refresh_token=os.environ["YT_REFRESH_TOKEN"],
+                        client_id=os.environ["YT_CLIENT_ID"], client_secret=os.environ["YT_CLIENT_SECRET"],
+                        token_uri="https://oauth2.googleapis.com/token")
+    yt = build("youtube", "v3", credentials=creds)
+    yt.videos().update(part="status", body={"id": video_id, "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False}}).execute()

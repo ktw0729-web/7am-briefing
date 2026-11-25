@@ -7,7 +7,9 @@ MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-5-5")
 
 PROMPT = """아래는 지금 시점의 분야별 뉴스 헤드라인(언론사 포함)이다.
 오늘 날짜는 {today_kr}(한국시간)이다. 날짜를 언급해야 한다면 반드시 이 날짜만 쓰고, 헤드라인 속 다른 날짜나 추측한 날짜는 쓰지 말 것.
-이번 판은 [{edition}판]이다. 같은 사건을 다룬 기사는 하나로 묶어, 분야가 고르게 섞이도록 오늘의 핵심 이슈 {n}개를 골라라.
+이번 판은 [{edition}판]이다. 같은 사건을 다룬 기사는 하나로 묶어, 오늘의 핵심 이슈 {n}개를 골라라.
+선정 기준(중요도 순): ① 여러 언론사가 동시에 다루는 사건(헤드라인에 같은 사건이 몇 번 나오는지 세어 많을수록 중요) ② 국민 생활·경제·안보에 미치는 영향 범위 ③ 새로운 진전·발표가 있는 사건 ④ 단순 연예·스포츠·가십·홍보성 기사는 제외.
+분야는 억지로 균등하게 맞추지 말고 중요도를 우선하되, 한 분야가 {n}개 중 4개를 넘지 않게 하고 가능하면 3개 이상의 분야를 포함할 것.
 
 규칙:
 - 오늘 앞선 판에서 이미 다룬 이슈 목록: {covered}
@@ -45,7 +47,7 @@ def _models(key: str) -> list:
     print("Gemini 후보(시도 순서):", names)
     return names
 
-def _gemini(prompt: str) -> str:
+def _gemini_once(prompt: str) -> str:
     key = os.environ["GEMINI_API_KEY"]
     body = {"contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 16000}}
@@ -72,6 +74,18 @@ def _gemini(prompt: str) -> str:
             break
         print("Gemini 실패, 다른 모델 시도:", last)
     raise RuntimeError(f"Gemini 호출 실패: {last}")
+
+def _gemini(prompt: str) -> str:
+    """전 모델이 과부하(503)일 수 있어, 전체 후보 순회를 최대 5회 반복한다(회차 사이 90초 대기)."""
+    err = None
+    for rnd in range(5):
+        try:
+            return _gemini_once(prompt)
+        except RuntimeError as e:
+            err = e
+            if rnd < 4:
+                print(f"Gemini 전체 후보 실패({rnd+1}/5회차) -> 90초 후 재시도"); time.sleep(90)
+    raise err
 
 def _claude(prompt: str) -> str:
     import anthropic
