@@ -10,7 +10,7 @@ FEEDS = {
     "산업": f"{BASE}/search?q=산업+when:1d&hl=ko&gl=KR&ceid=KR:ko",
 }
 
-def fetch(per_category: int = 15) -> dict[str, list[dict]]:
+def fetch(per_category: int = 30) -> dict[str, list[dict]]:
     out = {}
     for cat, url in FEEDS.items():
         feed = feedparser.parse(url)
