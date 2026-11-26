@@ -263,7 +263,7 @@ def keep(org_list, name, kind, amt):
 
 def to_md(days, key):
     now = datetime.now(g.KST).strftime("%Y-%m-%d %H:%M")
-    lines = [f"# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청 SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 {days}일, 조회 {now} KST", ""]
+    lines = [f"# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청(지방청 제외) SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 {days}일, 조회 {now} KST", ""]
     for svc in SERVICES:
         for kind in ("용역", "공사"):
             items, op, err = call(svc, kind, days, key)
@@ -275,8 +275,8 @@ def to_md(days, key):
                 org_list, name, no, amt, meta, links = row(svc, it)
                 disp = org_list
                 if svc == "계약":
-                    if is_proxy_contract(it):
-                        continue  # 조달청 대행 계약 제외
+                    if is_proxy_contract(it) or "지방조달청" in pick(it, "cntrctInsttNm"):
+                        continue  # 조달청 대행 계약, 지방조달청 체결 건 제외
                     dem = demand_orgs(it)
                     if dem:
                         org_list = dem
