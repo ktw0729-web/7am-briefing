@@ -40,9 +40,17 @@ jobs:
           mkdir -p g2b
           python scripts/nara_g2b.py --days "$DAYS" --format md | tee g2b/latest.md
           cat g2b/latest.md >> "$GITHUB_STEP_SUMMARY"
+      - name: 사전규격·낙찰·계약 조회 (RFP·결과)
+        continue-on-error: true   # 서비스 활용신청·필드 차이로 실패해도 공고 수집은 유지
+        env:
+          G2B_SERVICE_KEY: ${{ secrets.G2B_SERVICE_KEY }}
+        run: |
+          python scripts/nara_g2b_extra.py --days 7 > g2b/extra.md
+          cat g2b/extra.md >> "$GITHUB_STEP_SUMMARY"
       - name: 결과 커밋
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add g2b/latest.md
+          [ -f g2b/extra.md ] && git add g2b/extra.md
           git diff --cached --quiet || (git commit -m "g2b $(date -u +%FT%H)" && git pull --rebase -q && git push)
