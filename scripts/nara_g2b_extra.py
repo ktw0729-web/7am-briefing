@@ -39,7 +39,7 @@ SERVICES = {
     },
 }
 TITLES = {"사전규격": "사전규격 (RFP 초안·규격서)", "낙찰": "낙찰 결과", "계약": "계약 체결"}
-ROWS, MAX_PAGES = 999, 10
+ROWS, MAX_PAGES = 999, 30
 
 
 def pick(it, *keys):
@@ -72,12 +72,12 @@ def call(svc, kind, days, key):
     errs = []
     empty = None
     for base in SERVICES[svc]["bases"]:
-        for op, div in [(o, d) for o in SERVICES[svc]["ops"][kind] for d in ((1, 2, 3) if svc != "사전규격" else (1,))]:
+        for op, div in [(o, d) for o in SERVICES[svc]["ops"][kind] for d in (1,)]:
             out, page, total = [], 1, None
             ok = False
             while page <= MAX_PAGES:
                 params = {
-                    "serviceKey": key, "pageNo": page, "numOfRows": ROWS, "type": "json", "inqryDiv": div,
+                    "serviceKey": key, "pageNo": page, "numOfRows": (ROWS if svc == "사전규격" else 100), "type": "json", "inqryDiv": div,
                     "inqryBgnDt": bgn.strftime("%Y%m%d%H%M"), "inqryEndDt": end.strftime("%Y%m%d%H%M"),
                     "inqryBgnDate": bgn.strftime("%Y%m%d"), "inqryEndDate": end.strftime("%Y%m%d"),
                 }
@@ -90,6 +90,11 @@ def call(svc, kind, days, key):
                     break
                 except Exception as e:  # 네트워크·JSON 오류
                     errs.append(f"{op}: {type(e).__name__}")
+                    break
+                err = data.get("nkoneps.com.response.ResponseError")
+                if err:
+                    h = err.get("header", {})
+                    errs.append(f"{op}: {h.get('resultCode')} {h.get('resultMsg', '')}")
                     break
                 resp = data.get("response", data)
                 hdr = resp.get("header", {})
