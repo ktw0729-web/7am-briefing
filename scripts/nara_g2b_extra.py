@@ -13,6 +13,7 @@ import os
 import sys
 import urllib.error
 import urllib.parse
+import time
 import urllib.request
 from datetime import datetime, timedelta
 
@@ -23,18 +24,18 @@ ROOT = "https://apis.data.go.kr/1230000"
 SERVICES = {
     "사전규격": {
         "bases": [f"{ROOT}/ao/HrcspSsstndrdInfoService", f"{ROOT}/ad/HrcspSsstndrdInfoService"],
-        "ops": {"용역": ["getPublicPrcureThngInfoServc", "getPublicPrcureThngInfoServc01"],
-                "공사": ["getPublicPrcureThngInfoCnstwk", "getPublicPrcureThngInfoCnstwk01"]},
+        "ops": {"용역": ["getPublicPrcureThngInfoServc"],
+                "공사": ["getPublicPrcureThngInfoCnstwk", "getPublicPrcureThngInfoCnstwkPPSSrch"]},
     },
     "낙찰": {
         "bases": [f"{ROOT}/as/ScsbidInfoService", f"{ROOT}/ad/ScsbidInfoService"],
-        "ops": {"용역": ["getScsbidListSttusServc", "getScsbidListSttusServc01"],
-                "공사": ["getScsbidListSttusCnstwk", "getScsbidListSttusCnstwk01"]},
+        "ops": {"용역": ["getScsbidListSttusServc", "getScsbidListSttusServcPPSSrch", "getOpengResultListInfoServc"],
+                "공사": ["getScsbidListSttusCnstwk", "getScsbidListSttusCnstwkPPSSrch", "getOpengResultListInfoCnstwk"]},
     },
     "계약": {
         "bases": [f"{ROOT}/ao/CntrctInfoService", f"{ROOT}/ad/CntrctInfoService"],
         "ops": {"용역": ["getCntrctInfoListServc", "getCntrctInfoListServcPPSSrch"],
-                "공사": ["getCntrctInfoListCnstwk", "getCntrctInfoListCnstwkPPSSrch"]},
+                "공사": ["getCntrctInfoListCnstwk", "getCntrctInfoListCnstwkPPSSrch"]},  # 오퍼레이션명은 공개된 목록으로 확인
     },
 }
 TITLES = {"사전규격": "사전규격 (RFP 초안·규격서)", "낙찰": "낙찰 결과", "계약": "계약 체결"}
@@ -49,14 +50,31 @@ def pick(it, *keys):
     return ""
 
 
+def _get(url, tries=3):
+    """일시적 네트워크 오류(URLError·타임아웃)는 재시도. HTTPError 는 그대로 올린다."""
+    last = None
+    for i in range(tries):
+        try:
+            with urllib.request.urlopen(url, timeout=60) as r:
+                return r.read().decode("utf-8")
+        except urllib.error.HTTPError:
+            raise
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            last = e
+            time.sleep(2 * (i + 1))
+    raise last
+
+
 def call(svc, kind, days, key):
-    """후보 base×op 를 차례로 시도. (items, 사용한 op, 오류 요약) 반환."""
+    """후보 base×op 를 차례로 시도. 오류이거나 0건이면 다음 후보로. (items, 사용한 op, 오류 요약) 반환."""
     end = datetime.now(g.KST)
     bgn = end - timedelta(days=days)
     errs = []
+    empty = None
     for base in SERVICES[svc]["bases"]:
         for op in SERVICES[svc]["ops"][kind]:
             out, page, total = [], 1, None
+            ok = False
             while page <= MAX_PAGES:
                 params = {
                     "serviceKey": key, "pageNo": page, "numOfRows": ROWS, "type": "json", "inqryDiv": 1,
@@ -65,11 +83,10 @@ def call(svc, kind, days, key):
                 }
                 url = f"{base}/{op}?{urllib.parse.urlencode(params)}"
                 try:
-                    with urllib.request.urlopen(url, timeout=60) as r:
-                        raw = r.read().decode("utf-8")
-                    data = json.loads(raw)
+                    data = json.loads(_get(url))
                 except urllib.error.HTTPError as e:
-                    errs.append(f"{base.rsplit('/',1)[-1]}/{op}: HTTP {e.code}")
+                    hint = " (권한 없음: 활용신청 승인·키 반영 확인)" if e.code in (401, 403) else ""
+                    errs.append(f"{base.rsplit('/',1)[-1]}/{op}: HTTP {e.code}{hint}")
                     break
                 except Exception as e:  # 네트워크·JSON 오류
                     errs.append(f"{op}: {type(e).__name__}")
@@ -88,15 +105,20 @@ def call(svc, kind, days, key):
                 out += items
                 total = int(body.get("totalCount", 0) or 0)
                 if not items or len(out) >= total:
-                    print(f"[{svc}/{kind}] {op}: 전체 {total}건 중 {len(out)}건 조회", file=sys.stderr)
-                    if out:
-                        print(f"[필드] {svc}/{kind}: {sorted(out[0].keys())}", file=sys.stderr)
-                    return out, op, ""
+                    ok = True
+                    break
                 page += 1
-            else:
+            if not ok:
+                continue
+            print(f"[{svc}/{kind}] {op}: 전체 {total}건 중 {len(out)}건 조회", file=sys.stderr)
+            if out:
+                print(f"[필드] {svc}/{kind}: {sorted(out[0].keys())}", file=sys.stderr)
                 return out, op, ""
+            empty = (out, op, "")  # 0건: 다른 후보도 시도
     for e in errs:
         print(f"[시도 실패] {svc}/{kind}: {e}", file=sys.stderr)
+    if empty:
+        return empty
     return None, "", "; ".join(errs[-3:]) or "응답 없음"
 
 
