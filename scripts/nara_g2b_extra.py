@@ -40,6 +40,9 @@ SERVICES = {
 }
 TITLES = {"사전규격": "사전규격 (RFP 초안·규격서)", "낙찰": "낙찰 결과", "계약": "계약 체결"}
 ROWS, MAX_PAGES = 999, 30
+T0 = time.time()
+BUDGET = 150  # 초(호출 1회당): 이 시간이 지나면 조회를 멈추고 모은 것만 출력
+RESULT_DAYS = 3  # 낙찰·계약 조회 일수 (전국 건수가 많아 짧게)
 
 
 def pick(it, *keys):
@@ -80,6 +83,9 @@ def _fetch(base, op, key, bgn, end, variant, rows, errs, max_pages=MAX_PAGES):
     """한 기간을 전부 조회. 성공하면 (items, total), 오류면 None."""
     out, page = [], 1
     while page <= max_pages:
+        if time.time() - T0 > BUDGET:
+            print(f"[시간 초과] {op}: {len(out)}건에서 중단", file=sys.stderr)
+            return out, len(out)
         url = f"{base}/{op}?{urllib.parse.urlencode(_params(key, page, rows, bgn, end, variant))}"
         try:
             data = json.loads(_get(url))
@@ -116,9 +122,13 @@ def _fetch(base, op, key, bgn, end, variant, rows, errs, max_pages=MAX_PAGES):
 
 def call(svc, kind, days, key):
     """base×op 후보를 차례로. 낙찰·계약은 (기간·날짜파라미터) 조합을 바꿔 가며 되는 방식을 찾는다."""
+    global T0
+    T0 = time.time()
     end = datetime.now(g.KST)
     errs = []
     empty = None
+    if svc != "사전규격":
+        days = min(days, RESULT_DAYS)
     if svc == "사전규격":
         combos = [(days, "both", 999)]
     else:
