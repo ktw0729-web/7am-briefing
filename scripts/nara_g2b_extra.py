@@ -211,6 +211,16 @@ def is_proxy_contract(it):
     return bool(dem) and not any(o in g.ORGS for o in dem)
 
 
+def demand_names(it):
+    """계약의 수요기관 이름만('[1^코드^기관명^구분^...]' 의 3번째 칸)."""
+    out = []
+    for part in pick(it, "dminsttList").split("],"):
+        f = part.strip("[] ").split("^")
+        if len(f) >= 3 and f[2]:
+            out.append(f[2])
+    return ", ".join(dict.fromkeys(out))
+
+
 def corp_names(raw):
     """'[1^주계약업체^단독^업체명^대표^...],[2^...]' → '업체명(주계약), 업체명' 형태로 정리."""
     out = []
@@ -263,12 +273,18 @@ def to_md(days, key):
             rows, seen = [], set()
             for it in items:
                 org_list, name, no, amt, meta, links = row(svc, it)
+                disp = org_list
                 if svc == "계약":
                     if is_proxy_contract(it):
                         continue  # 조달청 대행 계약 제외
                     dem = demand_orgs(it)
                     if dem:
                         org_list = dem
+                    ctr = pick(it, "cntrctInsttNm")
+                    if "조달청" in ctr:
+                        # 조달청이 체결한 계약은 계약기관을 앞에 두고 수요기관을 함께 표기
+                        disp = [ctr]
+                        meta = [f"수요기관 {demand_names(it) or '미기재'}"] + meta
                     # 체결일이 최근 14일 안인 건만(변경계약 등 과거 건·미체결 제외), 중복 제거
                     d = pick(it, "cntrctCnclsDate", "cntrctDate")
                     if not d or d < (datetime.now(g.KST) - timedelta(days=14)).strftime("%Y-%m-%d") \
@@ -280,7 +296,7 @@ def to_md(days, key):
                     seen.add(sig)
                 if keep(org_list, name, kind, amt):
                     tag = g.sism_kind(name)
-                    rows.append((amt, org_list, f"[{tag}] {name}" if tag and kind == "용역" else name, no, meta, links))
+                    rows.append((amt, disp, f"[{tag}] {name}" if tag and kind == "용역" else name, no, meta, links))
             rows.sort(key=lambda r: -r[0])
             if svc == "계약" and len(rows) > 40:
                 lines.append(f"(참고: {len(rows)}건 중 금액 상위 40건만 표시)")
