@@ -72,12 +72,12 @@ def call(svc, kind, days, key):
     errs = []
     empty = None
     for base in SERVICES[svc]["bases"]:
-        for op in SERVICES[svc]["ops"][kind]:
+        for op, div in [(o, d) for o in SERVICES[svc]["ops"][kind] for d in ((1, 2, 3) if svc != "사전규격" else (1,))]:
             out, page, total = [], 1, None
             ok = False
             while page <= MAX_PAGES:
                 params = {
-                    "serviceKey": key, "pageNo": page, "numOfRows": ROWS, "type": "json", "inqryDiv": 1,
+                    "serviceKey": key, "pageNo": page, "numOfRows": ROWS, "type": "json", "inqryDiv": div,
                     "inqryBgnDt": bgn.strftime("%Y%m%d%H%M"), "inqryEndDt": end.strftime("%Y%m%d%H%M"),
                     "inqryBgnDate": bgn.strftime("%Y%m%d"), "inqryEndDate": end.strftime("%Y%m%d"),
                 }
@@ -104,13 +104,15 @@ def call(svc, kind, days, key):
                     items = [items]
                 out += items
                 total = int(body.get("totalCount", 0) or 0)
+                if page == 1 and not items:
+                    print(f"[진단] {svc}/{kind} {op} div={div} 응답: {json.dumps(resp, ensure_ascii=False)[:300]}", file=sys.stderr)
                 if not items or len(out) >= total:
                     ok = True
                     break
                 page += 1
             if not ok:
                 continue
-            print(f"[{svc}/{kind}] {op}: 전체 {total}건 중 {len(out)}건 조회", file=sys.stderr)
+            print(f"[{svc}/{kind}] {op} div={div}: 전체 {total}건 중 {len(out)}건 조회", file=sys.stderr)
             if out:
                 print(f"[필드] {svc}/{kind}: {sorted(out[0].keys())}", file=sys.stderr)
                 return out, op, ""
