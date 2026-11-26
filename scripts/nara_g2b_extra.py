@@ -176,6 +176,16 @@ def orgs_of(it):
     return [v for v in vals if v]
 
 
+def corp_names(raw):
+    """'[1^주계약업체^단독^업체명^대표^...],[2^...]' → '업체명(주계약), 업체명' 형태로 정리."""
+    out = []
+    for part in str(raw or "").split("],"):
+        f = part.strip("[] ").split("^")
+        if len(f) >= 4 and f[3]:
+            out.append(f[3])
+    return ", ".join(dict.fromkeys(out)) or "-"
+
+
 def row(svc, it):
     name = pick(it, "bidNtceNm", "cntrctNm", "bfSpecNm", "prdctClsfcNoNm", "bizNm", "cntrctNm")
     no = pick(it, "bfSpecRgstNo", "untyCntrctNo", "bidNtceNo")
@@ -189,7 +199,7 @@ def row(svc, it):
                 f"낙찰률 {pick(it, 'sucsfbidRate') or '-'}", f"개찰 {pick(it, 'rlOpengDt', 'opengDt') or '-'}"]
     else:
         meta = [f"체결 {pick(it, 'cntrctCnclsDate', 'cntrctDate') or '-'}",
-                f"업체 {pick(it, 'corpList', 'cntrctCorpNm') or '-'}"]
+                f"업체 {corp_names(pick(it, 'corpList', 'cntrctCorpNm'))}"]
     return org_list, name, no, amount(it), meta, links
 
 
@@ -208,13 +218,26 @@ def to_md(days, key):
             if items is None:
                 lines += [f"## {TITLES[svc]} — {kind} (조회 실패)", f"- 조회 실패: {err}", ""]
                 continue
-            rows = []
+            rows, seen = [], set()
             for it in items:
                 org_list, name, no, amt, meta, links = row(svc, it)
+                if svc == "계약":
+                    # 체결일이 최근 14일 안인 건만(변경계약 등 과거 건·미체결 제외), 중복 제거
+                    d = pick(it, "cntrctCnclsDate", "cntrctDate")
+                    if not d or d < (datetime.now(g.KST) - timedelta(days=14)).strftime("%Y-%m-%d") \
+                            or d > datetime.now(g.KST).strftime("%Y-%m-%d"):
+                        continue
+                    sig = (name, amt, d)
+                    if sig in seen:
+                        continue
+                    seen.add(sig)
                 if keep(org_list, name, kind, amt):
                     tag = g.sism_kind(name)
                     rows.append((amt, org_list, f"[{tag}] {name}" if tag and kind == "용역" else name, no, meta, links))
             rows.sort(key=lambda r: -r[0])
+            if svc == "계약" and len(rows) > 40:
+                lines.append(f"(참고: {len(rows)}건 중 금액 상위 40건만 표시)")
+                rows = rows[:40]
             lines.append(f"## {TITLES[svc]} — {kind} ({len(rows)}건)")
             if not rows:
                 lines.append("- 해당 건 없음")
