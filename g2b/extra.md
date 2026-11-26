@@ -1,4 +1,4 @@
-# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 7일, 조회 2026-11-26 15:06 KST
+# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 7일, 조회 2026-11-26 15:22 KST
 
 ## 사전규격 (RFP 초안·규격서) — 용역 (69건)
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00306672 / 28,280,079,640원 / 등록 2026-11-25 17:21:51 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=2
@@ -71,8 +71,8 @@
 - [조달청] 2027년 아스콘 원가계산 용역계약 요청 / 번호 R26BD00306530 / 168,303,520원 / 등록 2026-11-25 15:25:26 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306530&fileType=BFDTL&fileSeq=1
 - [대전광역시] 2027년 갑천생태호수공원 질서유지관리 용역 / 번호 R26BD00305259 / 160,794,000원 / 등록 2026-11-23 21:39:33 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305259&fileType=BFDTL&fileSeq=1
 
-## 사전규격 (RFP 초안·규격서) — 공사 (조회 실패)
-- 조회 실패: HrcspSsstndrdInfoService/getPublicPrcureThngInfoCnstwk01: HTTP 400; HrcspSsstndrdInfoService/getPublicPrcureThngInfoCnstwk: HTTP 400; HrcspSsstndrdInfoService/getPublicPrcureThngInfoCnstwk01: HTTP 400
+## 사전규격 (RFP 초안·규격서) — 공사 (1건)
+- [조달청] 형산강 포항지구 하천정비사업 / 번호 R26BD00305312 / 금액 미기재 / 등록 2026-11-24 09:11:12 / 의견마감 2026-12-01 18:00:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305312&fileType=BFDTL&fileSeq=1
 
 ## 낙찰 결과 — 용역 (0건)
 - 해당 건 없음
@@ -80,9 +80,9 @@
 ## 낙찰 결과 — 공사 (0건)
 - 해당 건 없음
 
-## 계약 체결 — 용역 (조회 실패)
-- 조회 실패: CntrctInfoService/getCntrctInfoListServcPPSSrch: HTTP 403; CntrctInfoService/getCntrctInfoListServc: HTTP 400; CntrctInfoService/getCntrctInfoListServcPPSSrch: HTTP 400
+## 계약 체결 — 용역 (0건)
+- 해당 건 없음
 
-## 계약 체결 — 공사 (조회 실패)
-- 조회 실패: CntrctInfoService/getCntrctInfoListCnstwkPPSSrch: HTTP 403; CntrctInfoService/getCntrctInfoListCnstwk: HTTP 400; CntrctInfoService/getCntrctInfoListCnstwkPPSSrch: HTTP 400
+## 계약 체결 — 공사 (0건)
+- 해당 건 없음
 
