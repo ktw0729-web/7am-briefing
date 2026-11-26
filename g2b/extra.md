@@ -1,4 +1,4 @@
-# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청(지방청 제외) SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 7일, 조회 2026-11-26 20:11 KST
+# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청(지방청 제외) SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 7일, 조회 2026-11-27 06:21 KST
 
 ## 사전규격 (RFP 초안·규격서) — 용역 (36건)
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00306672 / 28,280,079,640원 / 등록 2026-11-25 17:21:51 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=2
