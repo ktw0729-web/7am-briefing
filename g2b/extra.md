@@ -1,6 +1,6 @@
-# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 7일, 조회 2026-11-26 17:26 KST
+# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 7일, 조회 2026-11-26 17:37 KST
 
-## 사전규격 (RFP 초안·규격서) — 용역 (72건)
+## 사전규격 (RFP 초안·규격서) — 용역 (71건)
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00306672 / 28,280,079,640원 / 등록 2026-11-25 17:21:51 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=2
 - [조달청] 청원오창 1BL 및 2BL 아파트 건설공사 시공단계 감독권한대행 등 통합 건설사업관리용역 / 번호 R26BD00304631 / 24,894,707,000원 / 등록 2026-11-23 11:16:41 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304631&fileType=BFDTL&fileSeq=1
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 서비스 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00305967 / 23,554,408,560원 / 등록 2026-11-24 18:03:25 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305967&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305967&fileType=BFDTL&fileSeq=2
@@ -43,7 +43,6 @@
 - [조달청] 2027 충청권 하계세계대학경기대회 성화 채화 및 봉송 운영 대행용역 / 번호 R26BD00306884 / 802,995,560원 / 등록 2026-11-26 09:29:18 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306884&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306884&fileType=BFDTL&fileSeq=2
 - [조달청] 정읍시 친환경 목조전망대 조성사업 기본 및 실시설계 용역 / 번호 R26BD00307087 / 709,698,000원 / 등록 2026-11-26 13:16:23 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307087&fileType=BFDTL&fileSeq=1
 - [조달청] 쌍령공원 민간공원조성 특례사업 감독 권한대행 등 건설사업관리 용역(전기) / 번호 R26BD00305134 / 690,000,000원 / 등록 2026-11-23 17:55:41 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305134&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305134&fileType=BFDTL&fileSeq=2
-- [조달청] [SM] 2027년 처내업무 행정정보화 유지보수 사업 / 번호 R26BD00303401 / 682,094,200원 / 등록 2026-11-19 17:34:41 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303401&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 2027~2028년도 디지털연탄쿠폰시스템 유지보수용역 / 번호 R26BD00304895 / 600,839,600원 / 등록 2026-11-23 15:52:29 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304895&fileType=BFDTL&fileSeq=1
 - [조달청] 2027년 학교 테크센터(서부) 운영 용역 / 번호 R26BD00304597 / 599,106,170원 / 등록 2026-11-23 10:46:03 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304597&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 2027년 국가재난안전교육원 정보시스템 유지관리 / 번호 R26BD00304318 / 555,947,360원 / 등록 2026-11-20 18:05:36 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304318&fileType=BFDTL&fileSeq=1
@@ -77,21 +76,23 @@
 ## 사전규격 (RFP 초안·규격서) — 공사 (1건)
 - [조달청] 형산강 포항지구 하천정비사업 / 번호 R26BD00305312 / 금액 미기재 / 등록 2026-11-24 09:11:12 / 의견마감 2026-12-01 18:00:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305312&fileType=BFDTL&fileSeq=1
 
-## 낙찰 결과 — 용역 (5건)
-- [교육부] [SI] 국립대학 통합 기록관리시스템 구축 사업 / 번호 R26BK01754427 / 8,860,000,000원 / 낙찰업체 (주)가온아이 / 낙찰률 - / 개찰 2026-11-14 16:36:22
+## 낙찰 결과 — 용역 (3건)
 - [한국국제협력단] [SI] 세네갈 AI 전환 센터 구축을 통한 디지털 역량 강화 사업 PMC 용역 / 번호 R26BK01705373 / 6,731,711,343원 / 낙찰업체 한국생산성본부 / 낙찰률 - / 개찰 2026-10-30 11:14:01
 - [산림청 국립산림과학원] [SI·SM] 27~28년도 국립산림과학원 연구정보시스템 통합 운영 및 유지관리 / 번호 R26BK01778913 / 3,102,000,000원 / 낙찰업체 주식회사코넥 / 낙찰률 - / 개찰 2026-11-18 07:18:05
 - [한국방송통신전파진흥원] [SM] 2026년 KCA 정보시스템 유지관리 및 운영지원 / 번호 R26BK01768036 / 3,000,800,000원 / 낙찰업체 에스엠티정보기술(주) / 낙찰률 - / 개찰 2026-11-11 17:37:41
-- [대전광역시] 대전용운국제수영장 개보수사업 감리(건축, 토목, 기계) 용역 / 번호 R26BK01837766 / 59,184,100원 / 낙찰업체 도담건축사사무소 / 낙찰률 88 / 개찰 2026-11-24 11:16:41
 
-## 낙찰 결과 — 공사 (2건)
-- [대전광역시] 대전용운국제수영장 개보수 건축공사 / 번호 R26BK01805634 / 5,192,915,000원 / 낙찰업체 주식회사유원건설산업 / 낙찰률 88.402 / 개찰 2026-11-10 14:48:33
+## 낙찰 결과 — 공사 (1건)
 - [대전광역시] 문평동 93번지 하수관로 긴급정비공사 / 번호 R26BK01838372 / 84,262,336원 / 낙찰업체 주식회사 성주건설 / 낙찰률 90.193 / 개찰 2026-11-24 11:19:42
 
-## 계약 체결 — 용역 (2건)
+## 계약 체결 — 용역 (5건)
+- [대전광역시] [SI·SM] 지역정보통합센터 정보시스템 통합 유지관리용역 / 번호 R26TE20195683 / 4,066,908,100원 / 체결 2026-11-25 / 업체 대신네트웍스 주식회사, 주식회사 윌코모시스템즈 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R25TA01271605&ctrtChgOrd=03&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
 - [대전광역시] 대전광역시 사이버침해대응센터 보안관제 용역(장기계속 2차) / 번호 R26TE20256181 / 1,807,300,000원 / 체결 2026-11-26 / 업체 주식회사 이글루코퍼레이션 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02472925&ctrtChgOrd=00&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
 - [대전광역시] 대전용운국제수영장 개보수사업 감리(건축, 토목, 기계) 용역 / 번호 R26TE20210540 / 59,184,100원 / 체결 2026-11-25 / 업체 도담건축사사무소 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02465915&ctrtChgOrd=00&prcmBsneSeCd=조070003&srchName=ctrtCrst&openUrl=Y
+- [대전광역시] 2026 대전 시민 크리에이터 어워즈 행사 대행 용역 / 번호 R26TE20195276 / 9,702,000원 / 체결 2026-11-25 / 업체 주식회사 에프엘엔터테인먼트 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02461740&ctrtChgOrd=00&prcmBsneSeCd=조070003&srchName=ctrtCrst&openUrl=Y
+- [대전광역시] 시립합창단 제178회 정기연주회·대전시립교향악단 디스커버리시리즈 6 '유산' 중계카메라 임차(토마토클래식TV) / 번호 R26TE20197363 / 4,500,000원 / 체결 2026-11-13 / 업체 주식회사 토마토클래식 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02457204&ctrtChgOrd=00&prcmBsneSeCd=조070003&srchName=ctrtCrst&openUrl=Y
 
-## 계약 체결 — 공사 (1건)
-- [대전광역시]  / 번호 R26TE20210417 / 5,192,915,000원 / 체결 2026-11-25 / 업체 주식회사유원건설산업 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02462036&ctrtChgOrd=00&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
+## 계약 체결 — 공사 (3건)
+- [대전광역시] 대덕특구 동측진입로 개설공사 / 번호 R26TE20195373 / 90,860,313,000원 / 체결 2026-11-25 / 업체 영민건설 주식회사, 구보종합건설(주), 윤원건설 주식회사, 주식회사 서영엔지니어링, 계룡건설산업 주식회사, 새로운종합건설(주), 주식회사 동일기술공사, 둔산건설 주식회사, (주)케이씨엠씨, 알디엠산업개발주식회사, 선우건설주식회사, 주식회사 칠성건설, 타오건설 주식회사 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=24000309_3&ctrtChgOrd=06&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
+- [대전광역시] 대전용운국제수영장 개보수 건축공사 / 번호 R26TE20210417 / 5,192,915,000원 / 체결 2026-11-25 / 업체 주식회사유원건설산업 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02462036&ctrtChgOrd=00&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
+- [대전광역시] 2026년 소방시설 주변 주정차 금지표시 설치공사 / 번호 R26TE20195026 / 44,488,800원 / 체결 2026-11-25 / 업체 주식회사에스에스이앤지 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02103131&ctrtChgOrd=02&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
 
