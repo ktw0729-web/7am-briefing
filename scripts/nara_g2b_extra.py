@@ -8,6 +8,7 @@ nara_g2b.py 와 같은 범위(수요기관 조달청 본청·대전광역시 + �
 사용법: G2B_SERVICE_KEY=... python scripts/nara_g2b_extra.py --days 7
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import sys
@@ -41,8 +42,9 @@ SERVICES = {
 TITLES = {"사전규격": "사전규격 (RFP 초안·규격서)", "낙찰": "낙찰 결과", "계약": "계약 체결"}
 ROWS, MAX_PAGES = 999, 30
 T0 = time.time()
-BUDGET = 150  # 초(호출 1회당): 이 시간이 지나면 조회를 멈추고 모은 것만 출력
-RESULT_DAYS = 3  # 낙찰·계약 조회 일수 (전국 건수가 많아 짧게)
+BUDGET = 240  # 초(호출 1회당): 이 시간이 지나면 조회를 멈추고 모은 것만 출력
+RESULT_DAYS = 2
+WORKERS = 5  # 동시에 받을 쪽 수
 
 
 def pick(it, *keys):
@@ -79,45 +81,62 @@ def _params(key, page, rows, bgn, end, variant):
     return prm
 
 
+def _page(base, op, key, bgn, end, variant, rows, page, errs):
+    """한 페이지 조회. 성공하면 (items, total), 오류면 None."""
+    url = f"{base}/{op}?{urllib.parse.urlencode(_params(key, page, rows, bgn, end, variant))}"
+    try:
+        data = json.loads(_get(url))
+    except urllib.error.HTTPError as e:
+        hint = " (권한 없음: 활용신청 승인·키 반영 확인)" if e.code in (401, 403) else ""
+        errs.append(f"{base.rsplit('/',1)[-1]}/{op}: HTTP {e.code}{hint}")
+        return None
+    except Exception as e:
+        errs.append(f"{op}: {type(e).__name__}")
+        return None
+    err = data.get("nkoneps.com.response.ResponseError")
+    if err:
+        h = err.get("header", {})
+        errs.append(f"{op}[{variant}]: {h.get('resultCode')} {h.get('resultMsg', '')}")
+        return None
+    resp = data.get("response", data)
+    hdr = resp.get("header", {})
+    if str(hdr.get("resultCode", "00")) not in ("00", "0"):
+        errs.append(f"{op}[{variant}]: {hdr.get('resultCode')} {hdr.get('resultMsg', '')}")
+        return None
+    body = resp.get("body", {})
+    items = body.get("items", [])
+    if isinstance(items, dict):
+        items = items.get("item", [])
+    if not isinstance(items, list):
+        items = [items]
+    return items, int(body.get("totalCount", 0) or 0)
+
+
 def _fetch(base, op, key, bgn, end, variant, rows, errs, max_pages=MAX_PAGES):
-    """한 기간을 전부 조회. 성공하면 (items, total), 오류면 None."""
-    out, page = [], 1
-    while page <= max_pages:
-        if time.time() - T0 > BUDGET:
-            print(f"[시간 초과] {op}: {len(out)}건에서 중단", file=sys.stderr)
-            return out, len(out)
-        url = f"{base}/{op}?{urllib.parse.urlencode(_params(key, page, rows, bgn, end, variant))}"
-        try:
-            data = json.loads(_get(url))
-        except urllib.error.HTTPError as e:
-            hint = " (권한 없음: 활용신청 승인·키 반영 확인)" if e.code in (401, 403) else ""
-            errs.append(f"{base.rsplit('/',1)[-1]}/{op}: HTTP {e.code}{hint}")
-            return None
-        except Exception as e:
-            errs.append(f"{op}: {type(e).__name__}")
-            return None
-        err = data.get("nkoneps.com.response.ResponseError")
-        if err:
-            h = err.get("header", {})
-            errs.append(f"{op}[{variant}]: {h.get('resultCode')} {h.get('resultMsg', '')}")
-            return None
-        resp = data.get("response", data)
-        hdr = resp.get("header", {})
-        if str(hdr.get("resultCode", "00")) not in ("00", "0"):
-            errs.append(f"{op}[{variant}]: {hdr.get('resultCode')} {hdr.get('resultMsg', '')}")
-            return None
-        body = resp.get("body", {})
-        items = body.get("items", [])
-        if isinstance(items, dict):
-            items = items.get("item", [])
-        if not isinstance(items, list):
-            items = [items]
-        out += items
-        total = int(body.get("totalCount", 0) or 0)
-        if not items or len(out) >= total:
-            return out, total
-        page += 1
-    return out, len(out)
+    """한 기간을 전부 조회. 1쪽으로 총건수를 알고 나머지 쪽은 동시에 받는다. 성공하면 (items, total), 오류면 None."""
+    first = _page(base, op, key, bgn, end, variant, rows, 1, errs)
+    if first is None:
+        return None
+    out, total = list(first[0]), first[1]
+    last = min(max_pages, -(-total // rows)) if total else 1
+    if last > 1 and first[0]:
+        def work(pg):
+            if time.time() - T0 > BUDGET:
+                return pg, "timeout"
+            return pg, _page(base, op, key, bgn, end, variant, rows, pg, errs)
+        got = {}
+        with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+            for pg, r in ex.map(work, range(2, last + 1)):
+                got[pg] = r
+        for pg in range(2, last + 1):
+            r = got.get(pg)
+            if r == "timeout":
+                print(f"[시간 초과] {op}: {pg}쪽/{last}쪽에서 중단", file=sys.stderr)
+                break
+            if r is None:
+                continue
+            out += r[0]
+    return out, total
 
 
 def call(svc, kind, days, key):
@@ -203,7 +222,7 @@ def corp_names(raw):
 
 
 def row(svc, it):
-    name = pick(it, "bidNtceNm", "cntrctNm", "bfSpecNm", "prdctClsfcNoNm", "bizNm", "cntrctNm")
+    name = pick(it, "bidNtceNm", "cntrctNm", "cnstwkNm", "bfSpecNm", "prdctClsfcNoNm", "bizNm", "cntrctNm")
     no = pick(it, "bfSpecRgstNo", "untyCntrctNo", "bidNtceNo")
     org_list = orgs_of(it)
     links = [v for k, v in it.items() if isinstance(v, str) and v.startswith("http") and "rl" in k.lower()]
@@ -238,8 +257,6 @@ def to_md(days, key):
             for it in items:
                 org_list, name, no, amt, meta, links = row(svc, it)
                 if svc == "계약":
-                    if len(seen) < 3:
-                        print(f"[계약 수요기관 샘플] 계약기관={pick(it, 'cntrctInsttNm')} / dminsttList={pick(it, 'dminsttList')[:150]}", file=sys.stderr)
                     if is_proxy_contract(it):
                         continue  # 조달청 대행 계약 제외
                     dem = demand_orgs(it)
