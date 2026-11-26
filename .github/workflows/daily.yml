@@ -85,11 +85,10 @@ jobs:
         with: { name: pending, path: pending/ }
 
   publish:
-    # 승인(Environment 'production'의 Required reviewers) 후에만 실행: 유튜브 공개 + Threads + 인스타 게시
+    # 준비 완료 후 자동 실행(승인 없음): 목표 시각까지 대기했다가 유튜브 공개 + Threads + 인스타 게시
     needs: run
     if: needs.run.outputs.ready == 'true' && (github.event_name == 'schedule' || github.event.inputs.timed == 'yes' || github.event.inputs.public == 'yes')
     runs-on: ubuntu-latest
-    environment: production
     timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4

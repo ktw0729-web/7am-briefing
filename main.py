@@ -10,6 +10,8 @@ import cards, cardnews, tts, video, images, brand, illust
 # 자막 표시 방식: "sentence" = 읽는 문장 하나만 / "paragraph" = 읽는 단락 전체 (둘 다 흰색, 이전·다음 글은 숨김)
 SUBTITLE_MODE = os.getenv("SUBTITLE_MODE", "sentence")
 
+SLOTS = {"morning": 6 * 60, "noon": 11 * 60 + 30, "evening": 20 * 60 + 30}   # 게시 목표 시각(KST, 자정부터의 분)
+
 def split_caption(text: str, limit: int = 70) -> list[str]:
     """나레이션을 자막 단위(문장, 길면 쉼표/공백에서 분할)로 쪼갠다."""
     out = []
@@ -47,12 +49,13 @@ def publish_stage():
     if pend["scheduled"]:
         if os.path.exists(flag):
             print("이미 게시된 판 -> 건너뜀"); return
-        slot_dt = dt.datetime.fromisoformat(day).replace(hour=slot, tzinfo=ZoneInfo("Asia/Seoul"))
+        if slot < 60: slot *= 60   # 예전 pending(시 단위) 호환
+        slot_dt = dt.datetime.fromisoformat(day).replace(hour=slot // 60, minute=slot % 60, tzinfo=ZoneInfo("Asia/Seoul"))
         late = (now - slot_dt).total_seconds() / 60
         if late > 150:
             print(f"승인이 목표 시각보다 {int(late)}분 늦음 -> 게시하지 않음(영상은 비공개 유지)"); return
         if late < 0:
-            print(f"목표 시각 {slot}시까지 {int(-late*60)}초 대기"); time.sleep(-late * 60)
+            print(f"목표 시각 {slot_dt:%H:%M}까지 {int(-late*60)}초 대기"); time.sleep(-late * 60)
     brand.current["name"] = pend["edition_name"]
     video_id, link = pend["video_id"], ""
     if video_id and pend["public"]:
@@ -92,18 +95,18 @@ def main():
     if a.stage == "publish":
         return publish_stage()
     today = dt.datetime.now(ZoneInfo("Asia/Seoul"))
-    # 하루 3판: 아침(07시) / 점심(12시) / 저녁(21시). 실행 시각(KST)으로 판을 정한다. EDITION 환경변수로 강제 가능.
-    key = os.getenv("EDITION") or ("morning" if today.hour < 11 else "noon" if today.hour < 17 else "evening")
+    # 하루 3판: 아침(06:00) / 점심(11:30) / 저녁(20:30) 게시. 실행 시각(KST)으로 판을 정한다. EDITION 환경변수로 강제 가능.
+    key = os.getenv("EDITION") or ("morning" if today.hour < 8 else "noon" if today.hour < 16 else "evening")
     edition, edition_name = brand.EDITIONS[key]
     flag = os.path.join("history", f"posted_{today:%Y-%m-%d}_{key}.flag")
     pend_mark = os.path.join("history", f"pending_{today:%Y-%m-%d}_{key}.json")
     if os.getenv("DEDUP") == "1" and (os.path.exists(flag) or os.path.exists(pend_mark)):
         print(f"{today:%Y-%m-%d} {key}판은 이미 게시됨/승인 대기 중 -> 건너뜀"); return
     if os.getenv("DEDUP") == "1":   # 스케줄이 몇 시간 늦게 도착한 경우(GitHub 지연) 엉뚱한 시간대에 올리지 않고 건너뜀
-        slot_ = {"morning": 7, "noon": 12, "evening": 21}[key]
-        late_min = today.hour * 60 + today.minute - slot_ * 60
+        slot_ = SLOTS[key]
+        late_min = today.hour * 60 + today.minute - slot_
         if late_min > 150 or late_min < -120:   # 너무 늦게/너무 일찍(전날 판의 지연 도착 등) 시작된 실행은 건너뜀
-            print(f"{key}판 목표({slot_}시) 대비 {late_min}분 차이로 시작됨 -> 게시하지 않고 건너뜀"); return
+            print(f"{key}판 목표({slot_//60:02d}:{slot_%60:02d}) 대비 {late_min}분 차이로 시작됨 -> 게시하지 않고 건너뜀"); return
     brand.current["name"] = edition_name
     date_str = f"{today.year}.{today.month}.{today.day}"
     day = today.strftime("%Y-%m-%d")
@@ -181,9 +184,9 @@ def main():
     if a.dry_run:
         return
 
-    # 예약 게시: 스케줄 실행(PUBLISH_WAIT=1)은 목표 시각(07/12/21시 KST) 전(최대 5시간)에 만들어 두고 그 시각에 맞춰 게시한다.
-    slot = {"morning": 7, "noon": 12, "evening": 21}[key]
-    target = today.replace(hour=slot, minute=0, second=0, microsecond=0)
+    # 예약 게시: 스케줄 실행(PUBLISH_WAIT=1)은 목표 시각(06:00/11:30/20:30 KST) 전(최대 5시간)에 만들어 두고 그 시각에 맞춰 게시한다.
+    slot = SLOTS[key]
+    target = today.replace(hour=slot // 60, minute=slot % 60, second=0, microsecond=0)
     left = (target - dt.datetime.now(ZoneInfo("Asia/Seoul"))).total_seconds()
     scheduled = os.getenv("PUBLISH_WAIT") == "1" and 0 < left < 18000
     privacy = os.getenv("YT_PRIVACY", "private")
