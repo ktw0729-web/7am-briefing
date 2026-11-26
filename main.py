@@ -145,7 +145,7 @@ def main():
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
     slides = [("intro", [(" ".join(data["intro"].split()), False, -1)], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
-        photos = [ills[i]] if ills.get(i) else images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
+        photos = [ills[i]] if ills.get(i) else (images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}") if x.get("photo_fit") == "high" else [])   # 사진 적합도 낮으면(기본) 사진 생략 -> 분야 색상 배경
         spoken, shown = [(f"{i}번. {x['title']}.", True, -1)], []
         for pi, para in enumerate(split_paragraphs(x["narration"])):
             chunks = split_caption(para)
