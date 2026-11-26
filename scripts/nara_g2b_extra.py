@@ -238,15 +238,22 @@ def row(svc, it):
     return org_list, name, no, amount(it), meta, links
 
 
+def is_it(name):
+    up = name.upper()
+    return any(w.upper() in up for w in g.IT_WORDS)
+
+
 def keep(org_list, name, kind, amt):
-    if any(o in g.ORGS for o in org_list):
-        return True
+    if "대전광역시" in org_list:
+        return True  # 대전광역시 수요는 업종 무관
+    if "조달청" in org_list:
+        return is_it(name)  # 조달청 본청 수요는 SI·SM·IT 사업만
     return kind == "용역" and amt >= g.BIG_WON and g.sism_kind(name) is not None
 
 
 def to_md(days, key):
     now = datetime.now(g.KST).strftime("%Y-%m-%d %H:%M")
-    lines = [f"# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 {days}일, 조회 {now} KST", ""]
+    lines = [f"# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청 SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 {days}일, 조회 {now} KST", ""]
     for svc in SERVICES:
         for kind in ("용역", "공사"):
             items, op, err = call(svc, kind, days, key)
