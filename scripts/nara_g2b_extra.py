@@ -65,64 +65,85 @@ def _get(url, tries=3):
     raise last
 
 
+def _params(key, page, rows, bgn, end, variant):
+    prm = {"serviceKey": key, "pageNo": page, "numOfRows": rows, "type": "json", "inqryDiv": 1}
+    if variant in ("dt", "both"):
+        prm["inqryBgnDt"] = bgn.strftime("%Y%m%d%H%M")
+        prm["inqryEndDt"] = end.strftime("%Y%m%d%H%M")
+    if variant in ("date", "both"):
+        prm["inqryBgnDate"] = bgn.strftime("%Y%m%d")
+        prm["inqryEndDate"] = end.strftime("%Y%m%d")
+    return prm
+
+
+def _fetch(base, op, key, bgn, end, variant, rows, errs, max_pages=MAX_PAGES):
+    """한 기간을 전부 조회. 성공하면 (items, total), 오류면 None."""
+    out, page = [], 1
+    while page <= max_pages:
+        url = f"{base}/{op}?{urllib.parse.urlencode(_params(key, page, rows, bgn, end, variant))}"
+        try:
+            data = json.loads(_get(url))
+        except urllib.error.HTTPError as e:
+            hint = " (권한 없음: 활용신청 승인·키 반영 확인)" if e.code in (401, 403) else ""
+            errs.append(f"{base.rsplit('/',1)[-1]}/{op}: HTTP {e.code}{hint}")
+            return None
+        except Exception as e:
+            errs.append(f"{op}: {type(e).__name__}")
+            return None
+        err = data.get("nkoneps.com.response.ResponseError")
+        if err:
+            h = err.get("header", {})
+            errs.append(f"{op}[{variant}]: {h.get('resultCode')} {h.get('resultMsg', '')}")
+            return None
+        resp = data.get("response", data)
+        hdr = resp.get("header", {})
+        if str(hdr.get("resultCode", "00")) not in ("00", "0"):
+            errs.append(f"{op}[{variant}]: {hdr.get('resultCode')} {hdr.get('resultMsg', '')}")
+            return None
+        body = resp.get("body", {})
+        items = body.get("items", [])
+        if isinstance(items, dict):
+            items = items.get("item", [])
+        if not isinstance(items, list):
+            items = [items]
+        out += items
+        total = int(body.get("totalCount", 0) or 0)
+        if not items or len(out) >= total:
+            return out, total
+        page += 1
+    return out, len(out)
+
+
 def call(svc, kind, days, key):
-    """후보 base×op 를 차례로 시도. 오류이거나 0건이면 다음 후보로. (items, 사용한 op, 오류 요약) 반환."""
+    """base×op 후보를 차례로. 낙찰·계약은 (기간·날짜파라미터) 조합을 바꿔 가며 되는 방식을 찾는다."""
     end = datetime.now(g.KST)
-    bgn = end - timedelta(days=days)
     errs = []
     empty = None
+    if svc == "사전규격":
+        combos = [(days, "both", 999)]
+    else:
+        combos = [(1, "dt", 100), (1, "both", 100), (days, "dt", 100), (days, "date", 100), (days, "both", 10)]
     for base in SERVICES[svc]["bases"]:
-        for op, div in [(o, d) for o in SERVICES[svc]["ops"][kind] for d in (1,)]:
-            out, page, total = [], 1, None
-            ok = False
-            while page <= MAX_PAGES:
-                params = {
-                    "serviceKey": key, "pageNo": page, "numOfRows": (ROWS if svc == "사전규격" else 100), "type": "json", "inqryDiv": div,
-                    "inqryBgnDt": bgn.strftime("%Y%m%d%H%M"), "inqryEndDt": end.strftime("%Y%m%d%H%M"),
-                    "inqryBgnDate": bgn.strftime("%Y%m%d"), "inqryEndDate": end.strftime("%Y%m%d"),
-                }
-                url = f"{base}/{op}?{urllib.parse.urlencode(params)}"
-                try:
-                    data = json.loads(_get(url))
-                except urllib.error.HTTPError as e:
-                    hint = " (권한 없음: 활용신청 승인·키 반영 확인)" if e.code in (401, 403) else ""
-                    errs.append(f"{base.rsplit('/',1)[-1]}/{op}: HTTP {e.code}{hint}")
-                    break
-                except Exception as e:  # 네트워크·JSON 오류
-                    errs.append(f"{op}: {type(e).__name__}")
-                    break
-                err = data.get("nkoneps.com.response.ResponseError")
-                if err:
-                    h = err.get("header", {})
-                    errs.append(f"{op}: {h.get('resultCode')} {h.get('resultMsg', '')}")
-                    break
-                resp = data.get("response", data)
-                hdr = resp.get("header", {})
-                if str(hdr.get("resultCode", "00")) not in ("00", "0"):
-                    errs.append(f"{op}: {hdr.get('resultCode')} {hdr.get('resultMsg', '')}")
-                    break
-                body = resp.get("body", {})
-                items = body.get("items", [])
-                if isinstance(items, dict):
-                    items = items.get("item", [])
-                if not isinstance(items, list):
-                    items = [items]
-                out += items
-                total = int(body.get("totalCount", 0) or 0)
-                if page == 1 and not items:
-                    print(f"[진단] {svc}/{kind} {op} div={div} 응답: {json.dumps(resp, ensure_ascii=False)[:300]}", file=sys.stderr)
-                if not items or len(out) >= total:
-                    ok = True
-                    break
-                page += 1
-            if not ok:
-                continue
-            print(f"[{svc}/{kind}] {op} div={div}: 전체 {total}건 중 {len(out)}건 조회", file=sys.stderr)
-            if out:
-                print(f"[필드] {svc}/{kind}: {sorted(out[0].keys())}", file=sys.stderr)
-                return out, op, ""
-            empty = (out, op, "")  # 0건: 다른 후보도 시도
-    for e in errs:
+        for op in SERVICES[svc]["ops"][kind]:
+            for win, variant, rows in combos:
+                probe = _fetch(base, op, key, end - timedelta(days=win), end, variant, rows, errs, max_pages=1)
+                if probe is None:
+                    continue
+                print(f"[{svc}/{kind}] {op} 방식 win={win}일 {variant} rows={rows}: 통과", file=sys.stderr)
+                out = []
+                # 기간이 짧은 방식이면 하루씩 나눠 전체 기간을 채운다
+                spans = [(end - timedelta(days=i + win), end - timedelta(days=i)) for i in range(0, days, win)]
+                for sb, se in spans:
+                    r = _fetch(base, op, key, sb, se, variant, rows, errs)
+                    if r:
+                        out += r[0]
+                print(f"[{svc}/{kind}] {op}: {len(out)}건 조회", file=sys.stderr)
+                if out:
+                    print(f"[필드] {svc}/{kind}: {sorted(out[0].keys())}", file=sys.stderr)
+                    return out, op, ""
+                empty = (out, op, "")
+                break
+    for e in errs[-12:]:
         print(f"[시도 실패] {svc}/{kind}: {e}", file=sys.stderr)
     if empty:
         return empty
