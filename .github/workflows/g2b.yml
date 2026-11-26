@@ -53,4 +53,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add g2b/latest.md
           [ -f g2b/extra.md ] && git add g2b/extra.md
-          git diff --cached --quiet || (git commit -m "g2b $(date -u +%FT%H)" && git pull --rebase -q && git push)
+          git diff --cached --quiet || (git commit -m "g2b $(date -u +%FT%H)" && for i in 1 2 3; do git pull --rebase -X theirs -q && git push && break; git rebase --abort 2>/dev/null; sleep 5; done)

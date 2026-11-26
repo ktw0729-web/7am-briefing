@@ -176,6 +176,22 @@ def orgs_of(it):
     return [v for v in vals if v]
 
 
+def demand_orgs(it):
+    """계약의 수요기관(dminsttList) 이름들. '[1^...^기관명^...]' 형태를 구분자로 쪼갠 토큰."""
+    import re
+    raw = pick(it, "dminsttList")
+    return [t.strip() for t in re.split(r"[\^\[\],]", raw) if re.search("[가-힣]", t)]
+
+
+def is_proxy_contract(it):
+    """조달청(본청·지방청)이 다른 기관을 대신해 체결한 대행 계약인가."""
+    ctr = pick(it, "cntrctInsttNm")
+    if "조달청" not in ctr:
+        return False
+    dem = demand_orgs(it)
+    return bool(dem) and not any(o in g.ORGS for o in dem)
+
+
 def corp_names(raw):
     """'[1^주계약업체^단독^업체명^대표^...],[2^...]' → '업체명(주계약), 업체명' 형태로 정리."""
     out = []
@@ -222,6 +238,13 @@ def to_md(days, key):
             for it in items:
                 org_list, name, no, amt, meta, links = row(svc, it)
                 if svc == "계약":
+                    if len(seen) < 3:
+                        print(f"[계약 수요기관 샘플] 계약기관={pick(it, 'cntrctInsttNm')} / dminsttList={pick(it, 'dminsttList')[:150]}", file=sys.stderr)
+                    if is_proxy_contract(it):
+                        continue  # 조달청 대행 계약 제외
+                    dem = demand_orgs(it)
+                    if dem:
+                        org_list = dem
                     # 체결일이 최근 14일 안인 건만(변경계약 등 과거 건·미체결 제외), 중복 제거
                     d = pick(it, "cntrctCnclsDate", "cntrctDate")
                     if not d or d < (datetime.now(g.KST) - timedelta(days=14)).strftime("%Y-%m-%d") \
