@@ -1,4 +1,4 @@
-# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청 SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 7일, 조회 2026-11-26 17:52 KST
+# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청 SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 7일, 조회 2026-11-26 19:35 KST
 
 ## 사전규격 (RFP 초안·규격서) — 용역 (36건)
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00306672 / 28,280,079,640원 / 등록 2026-11-25 17:21:51 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=2
@@ -50,12 +50,12 @@
 - [대전광역시] 문평동 93번지 하수관로 긴급정비공사 / 번호 R26BK01838372 / 84,262,336원 / 낙찰업체 주식회사 성주건설 / 낙찰률 90.193 / 개찰 2026-11-24 11:19:42
 
 ## 계약 체결 — 용역 (4건)
-- [대전광역시] [SI·SM] 지역정보통합센터 정보시스템 통합 유지관리용역 / 번호 R26TE20195683 / 4,066,908,100원 / 체결 2026-11-25 / 업체 대신네트웍스 주식회사, 주식회사 윌코모시스템즈 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R25TA01271605&ctrtChgOrd=03&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
-- [대전광역시] 대전광역시 사이버침해대응센터 보안관제 용역(장기계속 2차) / 번호 R26TE20256181 / 1,807,300,000원 / 체결 2026-11-26 / 업체 주식회사 이글루코퍼레이션 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02472925&ctrtChgOrd=00&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
+- [조달청] [SI·SM] 지역정보통합센터 정보시스템 통합 유지관리용역 / 번호 R26TE20195683 / 4,066,908,100원 / 수요기관 대전광역시 / 체결 2026-11-25 / 업체 대신네트웍스 주식회사, 주식회사 윌코모시스템즈 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R25TA01271605&ctrtChgOrd=03&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
+- [조달청] 대전광역시 사이버침해대응센터 보안관제 용역(장기계속 2차) / 번호 R26TE20256181 / 1,807,300,000원 / 수요기관 대전광역시 / 체결 2026-11-26 / 업체 주식회사 이글루코퍼레이션 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02472925&ctrtChgOrd=00&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
 - [대전광역시] 2026 대전 시민 크리에이터 어워즈 행사 대행 용역 / 번호 R26TE20195276 / 9,702,000원 / 체결 2026-11-25 / 업체 주식회사 에프엘엔터테인먼트 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02461740&ctrtChgOrd=00&prcmBsneSeCd=조070003&srchName=ctrtCrst&openUrl=Y
 - [대전광역시] 시립합창단 제178회 정기연주회·대전시립교향악단 디스커버리시리즈 6 '유산' 중계카메라 임차(토마토클래식TV) / 번호 R26TE20197363 / 4,500,000원 / 체결 2026-11-13 / 업체 주식회사 토마토클래식 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02457204&ctrtChgOrd=00&prcmBsneSeCd=조070003&srchName=ctrtCrst&openUrl=Y
 
 ## 계약 체결 — 공사 (2건)
-- [대전광역시] 대덕특구 동측진입로 개설공사 / 번호 R26TE20195373 / 90,860,313,000원 / 체결 2026-11-25 / 업체 영민건설 주식회사, 구보종합건설(주), 윤원건설 주식회사, 주식회사 서영엔지니어링, 계룡건설산업 주식회사, 새로운종합건설(주), 주식회사 동일기술공사, 둔산건설 주식회사, (주)케이씨엠씨, 알디엠산업개발주식회사, 선우건설주식회사, 주식회사 칠성건설, 타오건설 주식회사 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=24000309_3&ctrtChgOrd=06&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
+- [조달청] 대덕특구 동측진입로 개설공사 / 번호 R26TE20195373 / 90,860,313,000원 / 수요기관 대전광역시 / 체결 2026-11-25 / 업체 영민건설 주식회사, 구보종합건설(주), 윤원건설 주식회사, 주식회사 서영엔지니어링, 계룡건설산업 주식회사, 새로운종합건설(주), 주식회사 동일기술공사, 둔산건설 주식회사, (주)케이씨엠씨, 알디엠산업개발주식회사, 선우건설주식회사, 주식회사 칠성건설, 타오건설 주식회사 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=24000309_3&ctrtChgOrd=06&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
 - [대전광역시] 2026년 소방시설 주변 주정차 금지표시 설치공사 / 번호 R26TE20195026 / 44,488,800원 / 체결 2026-11-25 / 업체 주식회사에스에스이앤지 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02103131&ctrtChgOrd=02&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
 
