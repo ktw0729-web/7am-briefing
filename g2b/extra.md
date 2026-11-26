@@ -1,6 +1,6 @@
-# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 7일, 조회 2026-11-26 15:31 KST
+# 나라장터 사전규격·낙찰·계약 (조달청 본청·대전광역시 + 대형 SI·SM, 용역·공사) — 최근 7일, 조회 2026-11-26 16:09 KST
 
-## 사전규격 (RFP 초안·규격서) — 용역 (70건)
+## 사전규격 (RFP 초안·규격서) — 용역 (69건)
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00306672 / 28,280,079,640원 / 등록 2026-11-25 17:21:51 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=2
 - [조달청] 청원오창 1BL 및 2BL 아파트 건설공사 시공단계 감독권한대행 등 통합 건설사업관리용역 / 번호 R26BD00304631 / 24,894,707,000원 / 등록 2026-11-23 11:16:41 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304631&fileType=BFDTL&fileSeq=1
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 서비스 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00305967 / 23,554,408,560원 / 등록 2026-11-24 18:03:25 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305967&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305967&fileType=BFDTL&fileSeq=2
@@ -20,7 +20,6 @@
 - [조달청] 일자리 연계형 지원주택 건립사업 감독권한대행 등 건설사업관리용역(건설, 소방, 통신) / 번호 R26BD00307251 / 3,462,400,000원 / 등록 2026-11-26 15:23:19 / 의견마감 2026-12-02 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307251&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307251&fileType=BFDTL&fileSeq=2
 - [한국석유공사] [SI·SM] 2027~2029년 정보시스템 통합 유지관리 용역 / 번호 R26BD00305478 / 3,222,180,849원 / 등록 2026-11-24 11:22:46 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305478&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305478&fileType=BFDTL&fileSeq=2
 - [한국지능정보사회진흥원] [SM] 디지털서비스 이용지원시스템 운영관리 / 번호 R26BD00305391 / 3,011,489,068원 / 등록 2026-11-24 09:52:09 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305391&fileType=BFDTL&fileSeq=1
-- [조달청] 주문진고 강원형 학교시설 개축공사 건설사업관리용역 / 번호 R26BD00303256 / 2,335,592,000원 / 등록 2026-11-19 16:00:46 / 의견마감 2026-11-26 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303256&fileType=BFDTL&fileSeq=1
 - [조달청] 2027~2028년 강원사이버통합보안관제센터 보안관제 용역 / 번호 R26BD00305277 / 2,174,825,800원 / 등록 2026-11-24 08:14:35 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305277&fileType=BFDTL&fileSeq=1
 - [조달청] 화장품 안전성 평가 제도 도입 지원 / 번호 R26BD00307219 / 2,072,998,000원 / 등록 2026-11-26 14:54:10 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307219&fileType=BFDTL&fileSeq=1
 - [조달청] [SI] 모두의창업 플랫폼 고도화 용역 / 번호 R26BD00303616 / 1,692,291,400원 / 등록 2026-11-20 09:32:24 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303616&fileType=BFDTL&fileSeq=1
@@ -35,8 +34,8 @@
 - [조달청] 2027년 도서관 문화예술 동아리 활동 지원 / 번호 R26BD00303662 / 1,197,817,200원 / 등록 2026-11-20 10:07:14 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303662&fileType=BFDTL&fileSeq=1
 - [조달청] 광양서초 본관동 공간재구조화 개축공사 감독권한대행 등 건설사업관리용역 / 번호 R26BD00307120 / 1,188,769,000원 / 등록 2026-11-26 13:40:47 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307120&fileType=BFDTL&fileSeq=1
 - [조달청] 2027년 재정교육 운영 / 번호 R26BD00307218 / 1,174,706,800원 / 등록 2026-11-26 14:53:12 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307218&fileType=BFDTL&fileSeq=1
-- [조달청] 2027년 온라인수출플랫폼 사업(온라인 수출 원스톱 지원 분야) 수행 용역 / 번호 R26BD00303253 / 1,157,422,120원 / 등록 2026-11-19 15:59:48 / 의견마감 2026-11-24 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303253&fileType=BFDTL&fileSeq=1
 - [조달청] 한전KDN 제주사업처 사옥신축 설계공모 / 번호 R26BD00303442 / 1,133,506,000원 / 등록 2026-11-19 18:02:51 / 의견마감 2026-11-24 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303442&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00303442&fileType=BFDTL&fileSeq=2
+- [조달청] [SM] 2027년 디지털숲가꾸기 데이터 품질관리체계 운영 사업 / 번호 R26BD00307282 / 1,040,063,600원 / 등록 2026-11-26 15:36:21 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307282&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 정보보호시스템 운영 및 유지관리 용역 / 번호 R26BD00304239 / 845,035,090원 / 등록 2026-11-20 17:24:34 / 의견마감 2026-11-23 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304239&fileType=BFDTL&fileSeq=1
 - [조달청] 2026년~2027년 유동인구 데이터 구매 용역 / 번호 R26BD00307167 / 806,390,000원 / 등록 2026-11-26 14:10:53 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307167&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307167&fileType=BFDTL&fileSeq=2
 - [조달청] 2027 충청권 하계세계대학경기대회 성화 채화 및 봉송 운영 대행용역 / 번호 R26BD00306884 / 802,995,560원 / 등록 2026-11-26 09:29:18 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306884&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306884&fileType=BFDTL&fileSeq=2
@@ -75,15 +74,15 @@
 ## 사전규격 (RFP 초안·규격서) — 공사 (1건)
 - [조달청] 형산강 포항지구 하천정비사업 / 번호 R26BD00305312 / 금액 미기재 / 등록 2026-11-24 09:11:12 / 의견마감 2026-12-01 18:00:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305312&fileType=BFDTL&fileSeq=1
 
-## 낙찰 결과 — 용역 (0건)
-- 해당 건 없음
+## 낙찰 결과 — 용역 (조회 실패)
+- 조회 실패: ScsbidInfoService/getScsbidListSttusServc: HTTP 400; ScsbidInfoService/getScsbidListSttusServcPPSSrch: HTTP 400; ScsbidInfoService/getOpengResultListInfoServc: HTTP 400
 
-## 낙찰 결과 — 공사 (0건)
-- 해당 건 없음
+## 낙찰 결과 — 공사 (조회 실패)
+- 조회 실패: ScsbidInfoService/getScsbidListSttusCnstwk: HTTP 400; ScsbidInfoService/getScsbidListSttusCnstwkPPSSrch: HTTP 400; ScsbidInfoService/getOpengResultListInfoCnstwk: HTTP 400
 
-## 계약 체결 — 용역 (0건)
-- 해당 건 없음
+## 계약 체결 — 용역 (조회 실패)
+- 조회 실패: getCntrctInfoListServcPPSSrch: 07 입력범위값 초과 에러; CntrctInfoService/getCntrctInfoListServc: HTTP 400; CntrctInfoService/getCntrctInfoListServcPPSSrch: HTTP 400
 
-## 계약 체결 — 공사 (0건)
-- 해당 건 없음
+## 계약 체결 — 공사 (조회 실패)
+- 조회 실패: getCntrctInfoListCnstwkPPSSrch: 07 입력범위값 초과 에러; CntrctInfoService/getCntrctInfoListCnstwk: HTTP 400; CntrctInfoService/getCntrctInfoListCnstwkPPSSrch: HTTP 400
 
