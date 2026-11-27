@@ -52,6 +52,12 @@ def issue_card(path, idx, total, issue, date_str, photo=None, credit=""):
     shadow(img, box, 40)
     _round_paste(img, pic, box)
     d = ImageDraw.Draw(img)
+    ai = bool(photo) and os.path.basename(photo).startswith("ai")
+    if ai:   # AI로 만든 장면 이미지는 사진 위에 분명히 표시(실제 보도사진으로 오해 방지)
+        lab = "AI 생성 이미지"
+        lw = int(d.textlength(lab, font=_font(28, True))) + 36
+        d.rounded_rectangle([box[0] + 24, box[1] + 24, box[0] + 24 + lw, box[1] + 76], 26, fill="#000000")
+        d.text((box[0] + 24 + lw // 2, box[1] + 50), lab, font=_font(28, True), fill="white", anchor="mm")
     pw = int(d.textlength(issue["category"], font=_font(40, True))) + 60
     d.rounded_rectangle([70, 560, 70 + pw, 632], 36, fill=col)
     d.text((70 + pw // 2, 596), issue["category"], font=_font(40, True), fill="white", anchor="mm")
@@ -70,7 +76,7 @@ def issue_card(path, idx, total, issue, date_str, photo=None, credit=""):
     src = ", ".join(issue.get("sources", []))[:40]
     d.line([70, CH - 110, CW - 70, CH - 110], fill="#2A333D", width=2)
     brand_mark(d, 70, CH - 82, 30, col)
-    foot = (f"참고: {src}" if src else "") + (f"  ·  Photo: {credit}" if photo and credit and "ill" not in os.path.basename(photo) else "")
+    foot = (f"참고: {src}" if src else "") + (f"  ·  Photo: {credit}" if photo and credit and not ai and "ill" not in os.path.basename(photo) else "")
     d.text((CW - 70, CH - 62), foot, font=_font(27), fill=DIM, anchor="rm")
     img.save(path)
 
