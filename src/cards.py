@@ -177,7 +177,9 @@ def issue_frame(path, idx, total, issue, date_str, units=(), cur=-1, photo=None,
     src = ", ".join(issue.get("sources", []))[:50]
     if src:
         d.text((100, H - 35), f"참고: {src}", font=_font(28), fill="#6E7681", anchor="lm")
-    if photo and photo_credit and "ill" not in os.path.basename(photo):
+    if photo and os.path.basename(photo).startswith("ai"):   # Cloudflare FLUX로 만든 장면 이미지
+        d.text((W - 100, H - 35), "AI 생성 이미지 · 실제 사진 아님", font=_font(28), fill="#6E7681", anchor="rm")
+    elif photo and photo_credit and "ill" not in os.path.basename(photo):
         d.text((W - 100, H - 35), f"Photos: {photo_credit}", font=_font(28), fill="#6E7681", anchor="rm")
     img.save(path)
 
