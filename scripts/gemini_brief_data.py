@@ -30,6 +30,7 @@ def call(model, key):
     for a in range(3):
         r = requests.post(url, headers={"x-goog-api-key": key}, json=body, timeout=240)
         if r.status_code in (429, 500, 502, 503, 504):
+            print(f"  {model} 시도{a+1}: HTTP {r.status_code} {r.text[:300]}", flush=True)
             time.sleep(15 * (a + 1)); continue
         r.raise_for_status()
         c = r.json()["candidates"][0]
