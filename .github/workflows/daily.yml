@@ -17,6 +17,7 @@ on:
         default: ''
 permissions:
   contents: write
+  actions: write   # 아침 판에서 g2b-bids 워크플로를 바로 실행하기 위해
 concurrency:
   group: daily-news-${{ github.run_id }}   # 승인 대기 중인 실행이 다른 판을 막지 않도록 실행별로 분리(중복은 history의 pending/flag 파일로 방지)
   cancel-in-progress: false
@@ -27,6 +28,18 @@ jobs:
       ready: ${{ steps.chk.outputs.ready }}
     timeout-minutes: 330      # 일찍 시작해도(최대 5시간 전) 정시까지 기다릴 수 있게 (GitHub 한도 360분)
     steps:
+      - name: 아침 판이면 입찰공고(g2b) 수집도 바로 실행 (GitHub 예약 실행 지연 대비)
+        if: github.event.inputs.timed == 'yes'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          h=$(TZ=Asia/Seoul date +%H)
+          if [ "$h" -ge 3 ] && [ "$h" -le 6 ]; then
+            gh workflow run g2b.yml --repo "$GITHUB_REPOSITORY" && echo "g2b-bids 실행 요청함 ($h시)"
+          else
+            echo "아침 판 아님($h시) - g2b 실행 생략"
+          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
