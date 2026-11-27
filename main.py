@@ -5,7 +5,7 @@
 import argparse, glob, datetime as dt, json, os, re, sys, time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 from zoneinfo import ZoneInfo
-import cards, cardnews, tts, video, images, brand, illust
+import cards, cardnews, tts, video, images, brand, illust, aiphoto
 
 # 자막 표시 방식: "sentence" = 읽는 문장 하나만 / "paragraph" = 읽는 단락 전체 (둘 다 흰색, 이전·다음 글은 숨김)
 SUBTITLE_MODE = os.getenv("SUBTITLE_MODE", "sentence")
@@ -90,6 +90,8 @@ def main():
     ap.add_argument("--stage", choices=["all", "prepare", "publish"], default="all", help="prepare: 만들어 두기(비공개), publish: 승인 후 공개·게시")
     ap.add_argument("--no-illust", action="store_true")
     ap.add_argument("--illust-only", action="store_true", help="일러스트만 만들어 보고 종료(테스트)")
+    ap.add_argument("--no-aiphoto", action="store_true", help="Cloudflare AI 장면 이미지 끄기")
+    ap.add_argument("--aiphoto-only", action="store_true", help="AI 장면 이미지와 카드만 만들어 cards 브랜치에 올리고 종료(테스트)")
     a = ap.parse_args()
 
     if a.stage == "publish":
@@ -141,11 +143,23 @@ def main():
         r = illust.make_all(issues, out, cards.COLORS); print(r)
         import cardhost; print(cardhost.publish(out, 'illust_test')); return
     ills = illust.make_all(issues, out, cards.COLORS) if os.getenv("ANTHROPIC_API_KEY") and not a.no_illust else {}
+    # 사진 고르기: (1) 일러스트 (2) 사진이 잘 맞는 이슈(photo_fit=high)는 스톡 사진 (3) 나머지는 무료 AI 장면 이미지 (4) 모두 실패하면 분야 색상 배경
+    stock = {}
+    for i, x in enumerate(issues, 1):
+        if not ills.get(i) and x.get("photo_fit") == "high":
+            got = images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
+            if got:
+                stock[i] = got
+    aiph = aiphoto.make_all(issues, out, skip=set(ills) | set(stock)) if aiphoto.enabled() and not a.no_aiphoto else {}
+    if a.aiphoto_only:
+        cardnews.build(f"{out}/cardnews", date_str, issues, {i: ([ills[i]] if ills.get(i) else stock.get(i) or aiph.get(i) or [])
+                                                             for i in range(1, total + 1)}, images.provider() if stock else "")
+        import cardhost; print(cardhost.publish(f"{out}/cardnews", 'aiphoto_test', ["[0-9]*.png"])); return
 
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
     slides = [("intro", [(" ".join(data["intro"].split()), False, -1)], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
-        photos = [ills[i]] if ills.get(i) else (images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}") if x.get("photo_fit") == "high" else [])   # 사진 적합도 낮으면(기본) 사진 생략 -> 분야 색상 배경
+        photos = [ills[i]] if ills.get(i) else (stock.get(i) or aiph.get(i) or [])   # 셋 다 없으면 분야 색상 배경
         spoken, shown = [(f"{i}번. {x['title']}.", True, -1)], []
         for pi, para in enumerate(split_paragraphs(x["narration"])):
             chunks = split_caption(para)
@@ -153,7 +167,8 @@ def main():
                 spoken.append((c, ci == len(chunks) - 1, pi)); shown.append((c, pi))
         slides.append(("issue", spoken, shown, x, i, photos))
     slides.append(("outro", [(" ".join(data["outro"].split()), False, -1)], [], None, 99, []))
-    used_photo = any(p for s in slides for p in s[5] if "/ill" not in p)   # 사진 출처 표기는 스톡 사진을 쓴 경우만
+    used_photo = any(p for s in slides for p in s[5] if "/ill" not in p and not aiphoto.is_ai(p))   # 사진 출처 표기는 스톡 사진을 쓴 경우만
+    used_ai = any(aiphoto.is_ai(p) for s in slides for p in s[5])   # AI 장면 이미지를 쓴 경우 '실제 사진 아님'을 밝힌다
     cardnews.build(f"{out}/cardnews", date_str, issues, {s[4]: s[5] for s in slides if s[0] == "issue"},
                    images.provider() if used_photo else "")
 
@@ -211,6 +226,8 @@ def main():
         desc += "\n\n※ 언론 보도를 AI로 요약·재구성한 영상입니다."
         if used_photo:
             desc += f"\n사진 출처: {images.provider()}"
+        if used_ai:
+            desc += "\n일부 장면 이미지는 AI로 생성한 것으로 실제 사진이 아닙니다."
         # 공개 모드 + 예약 실행이면: 지금 올려 두고(처리 시간 확보) YouTube가 목표 시각에 자동 공개
         publish_at = target.isoformat() if (scheduled and privacy == "public") else None
         video_id = upload(final, f"[{date_str}] {edition_name} - 오늘의 핵심 이슈 {total}", desc, privacy, publish_at, thumb)
@@ -223,7 +240,8 @@ def main():
         vurl = f"https://youtu.be/{video_id}" if (video_id and privacy == "public") else ""
         page_url = sitepage.publish(out, f"{day}_{key}" + ("_test" if a.sample else ""), date_str, edition_name, data["intro"], issues,
                                     {s_[4]: s_[5] for s_ in slides if s_[0] == "issue"}, cards.COLORS, vurl,
-                                    f"사진 출처: {images.provider()}" if used_photo else "", thumb)
+                                    " · ".join(([f"사진 출처: {images.provider()}"] if used_photo else []) +
+                                               (["일부 이미지는 AI 생성(실제 사진 아님)"] if used_ai else [])), thumb)
         print("웹페이지:", page_url or "(없음)")
 
     if scheduled:
