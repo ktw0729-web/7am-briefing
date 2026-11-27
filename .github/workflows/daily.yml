@@ -75,6 +75,8 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}   # 무료 AI 장면 이미지(Cloudflare Workers AI)
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           EDITION: ${{ steps.ed.outputs.e }}   # 정기 실행은 크론으로 판을 확정(일찍/늦게 시작해도 판 오분류 방지)
           DEDUP: ${{ (github.event_name == 'schedule' || github.event.inputs.timed == 'yes') && '1' || '' }}   # 정기 실행은 이미 게시된 판이면 건너뜀
           PUBLISH_WAIT: ${{ github.event_name == 'schedule' && '1' || '' }}
