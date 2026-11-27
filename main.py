@@ -143,23 +143,24 @@ def main():
         r = illust.make_all(issues, out, cards.COLORS); print(r)
         import cardhost; print(cardhost.publish(out, 'illust_test')); return
     ills = illust.make_all(issues, out, cards.COLORS) if os.getenv("ANTHROPIC_API_KEY") and not a.no_illust else {}
-    # 사진 고르기: (1) 일러스트 (2) 사진이 잘 맞는 이슈(photo_fit=high)는 스톡 사진 (3) 나머지는 무료 AI 장면 이미지 (4) 모두 실패하면 분야 색상 배경
+    # 사진 고르기: (1) 일러스트 (2) 기사 내용에 맞춘 무료 AI 장면 이미지 (3) AI 실패 시 사진이 잘 맞는 이슈(photo_fit=high)만 스톡 사진 (4) 모두 없으면 분야 색상 배경
+    # (스톡 사진은 검색어만으로 고르다 보니 '한파' 기사에 유럽 거리 사진처럼 엉뚱하게 걸리는 경우가 많아 AI 이미지를 우선한다)
+    aiph = aiphoto.make_all(issues, out, skip=set(ills)) if aiphoto.enabled() and not a.no_aiphoto else {}
     stock = {}
     for i, x in enumerate(issues, 1):
-        if not ills.get(i) and x.get("photo_fit") == "high":
+        if not ills.get(i) and not aiph.get(i) and x.get("photo_fit") == "high":
             got = images.fetch(x.get("image_keywords", []), f"{out}/photo{i:02d}")
             if got:
                 stock[i] = got
-    aiph = aiphoto.make_all(issues, out, skip=set(ills) | set(stock)) if aiphoto.enabled() and not a.no_aiphoto else {}
     if a.aiphoto_only:
-        cardnews.build(f"{out}/cardnews", date_str, issues, {i: ([ills[i]] if ills.get(i) else stock.get(i) or aiph.get(i) or [])
+        cardnews.build(f"{out}/cardnews", date_str, issues, {i: ([ills[i]] if ills.get(i) else aiph.get(i) or stock.get(i) or [])
                                                              for i in range(1, total + 1)}, images.provider() if stock else "")
         import cardhost; print(cardhost.publish(f"{out}/cardnews", 'aiphoto_test', ["[0-9]*.png"])); return
 
     # 슬라이드 정의: (종류, 음성 [(문장, 단락끝여부)], 화면 [(문장, 단락번호)], 이슈, 번호, 사진목록)
     slides = [("intro", [(" ".join(data["intro"].split()), False, -1)], [], None, 0, [])]
     for i, x in enumerate(issues, 1):
-        photos = [ills[i]] if ills.get(i) else (stock.get(i) or aiph.get(i) or [])   # 셋 다 없으면 분야 색상 배경
+        photos = [ills[i]] if ills.get(i) else (aiph.get(i) or stock.get(i) or [])   # 셋 다 없으면 분야 색상 배경
         spoken, shown = [(f"{i}번. {x['title']}.", True, -1)], []
         for pi, para in enumerate(split_paragraphs(x["narration"])):
             chunks = split_caption(para)
