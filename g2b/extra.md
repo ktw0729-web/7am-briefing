@@ -1,29 +1,29 @@
-# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청(지방청 제외) SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 7일, 조회 2026-11-27 11:26 KST
+# 나라장터 사전규격·낙찰·계약 (대전광역시 전체 + 조달청 본청(지방청 제외) SI·SM·IT + 대형 SI·SM 30억 이상, 용역·공사) — 최근 7일, 조회 2026-11-28 05:01 KST
 
 ## 사전규격 (RFP 초안·규격서) — 용역 (34건)
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00306672 / 28,280,079,640원 / 등록 2026-11-25 17:21:51 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306672&fileType=BFDTL&fileSeq=2
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 서비스 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00305967 / 23,554,408,560원 / 등록 2026-11-24 18:03:25 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305967&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305967&fileType=BFDTL&fileSeq=2
+- [조달청] [SI·SM] 2027~2028년 범부처통합연구지원시스템(IRIS) 통합 운영ㆍ유지보수 / 번호 R26BD00308216 / 16,274,670,000원 / 등록 2026-11-27 17:06:02 / 의견마감 2026-12-04 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00308216&fileType=BFDTL&fileSeq=1
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 인프라 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00305657 / 14,147,250,320원 / 등록 2026-11-24 14:45:13 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305657&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305657&fileType=BFDTL&fileSeq=2
-- [경찰청] [SI·SM] 본청 및 18개 시도청 112시스템 통합 유지관리 사업(2027년~2028년, 장기신규) / 번호 R26BD00304138 / 13,653,193,760원 / 등록 2026-11-20 16:20:27 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304138&fileType=BFDTL&fileSeq=1
 - [한국교육학술정보원] [SI] AI 디지털 교수학습 기반 공통모듈 개발(응용SW) / 번호 R26BD00305964 / 12,225,249,800원 / 등록 2026-11-24 18:02:00 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305964&fileType=BFDTL&fileSeq=2
 - [행정안전부 국가정보자원관리원 대구센터] [SM] 대구센터 클라우드 서비스 운영·유지관리(2027년~2028년) 사업 / 번호 R26BD00305572 / 11,784,414,780원 / 등록 2026-11-24 13:51:29 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305572&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305572&fileType=BFDTL&fileSeq=2
+- [한국도로공사] [SM] 2027~2028년 부산경남본부 고속도로 통행료수납시스템 유지관리 용역 / 번호 R26BD00307899 / 10,504,000,000원 / 등록 2026-11-27 13:47:05 / 의견마감 2026-12-02 14:00:00
 - [사단법인 전국지방의료원연합회] [SM] 지방의료원 전산장비 유지보수 용역[긴급] / 번호 R26BD00306757 / 8,109,057,000원 / 등록 2026-11-25 18:35:01 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306757&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306757&fileType=BFDTL&fileSeq=2
 - [조달청] [SI] 등급판정체계 개편 정보시스템 구축 사업 / 번호 R26BD00304640 / 7,411,329,320원 / 등록 2026-11-23 11:25:33 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304640&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304640&fileType=BFDTL&fileSeq=2
 - [한국콘텐츠진흥원] [SI·SM] 2027~2028년 한국콘텐츠진흥원 정보시스템 통합위탁운영 / 번호 R26BD00307359 / 7,410,000,000원 / 등록 2026-11-26 16:37:40 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307359&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307359&fileType=BFDTL&fileSeq=2
+- [한국도로공사] [SM] 2027~2028년 강원본부 고속도로 통행료수납시스템 유지관리용역 / 번호 R26BD00307850 / 4,953,773,000원 / 등록 2026-11-27 13:14:34 / 의견마감 2026-12-02 14:00:00
 - [사단법인 전국지방의료원연합회] [SM] 지방의료원   DB 및 보안솔루션 유지보수 용역[긴급] / 번호 R26BD00307154 / 4,167,524,630원 / 등록 2026-11-26 14:00:26 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307154&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307154&fileType=BFDTL&fileSeq=2
 - [서민금융진흥원] [SI] 재해복구시스템 고도화 구축 사업 / 번호 R26BD00305913 / 4,000,000,000원 / 등록 2026-11-24 17:35:49 / 의견마감 2026-11-27 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305913&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305913&fileType=BFDTL&fileSeq=2
 - [한국석유공사] [SI·SM] 2027~2029년 정보시스템 통합 유지관리 용역 / 번호 R26BD00305478 / 3,222,180,849원 / 등록 2026-11-24 11:22:46 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305478&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305478&fileType=BFDTL&fileSeq=2
 - [한국지능정보사회진흥원] [SM] 디지털서비스 이용지원시스템 운영관리 / 번호 R26BD00305391 / 3,011,489,068원 / 등록 2026-11-24 09:52:09 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305391&fileType=BFDTL&fileSeq=1
+- [조달청] [SI] 국립금오공과대학교 통합경비시스템 용역 / 번호 R26BD00307804 / 2,129,212,000원 / 등록 2026-11-27 11:27:00 / 의견마감 2026-12-02 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307804&fileType=BFDTL&fileSeq=2
 - [조달청] [SI] 2027년 인공지능 기반 통합위험선별 모델 개발 / 번호 R26BD00306399 / 1,687,868,160원 / 등록 2026-11-25 14:14:07 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306399&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 2027년도 식품진흥원 플랫폼 운영 및 유지관리 용역 / 번호 R26BD00305076 / 1,264,042,120원 / 등록 2026-11-23 17:25:16 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305076&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 2027년 디지털숲가꾸기 데이터 품질관리체계 운영 사업 / 번호 R26BD00307282 / 1,040,063,600원 / 등록 2026-11-26 15:36:21 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307282&fileType=BFDTL&fileSeq=1
-- [조달청] [SM] 정보보호시스템 운영 및 유지관리 용역 / 번호 R26BD00304239 / 845,035,090원 / 등록 2026-11-20 17:24:34 / 의견마감 2026-11-23 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304239&fileType=BFDTL&fileSeq=1
 - [조달청] 2026년~2027년 유동인구 데이터 구매 용역 / 번호 R26BD00307167 / 806,390,000원 / 등록 2026-11-26 14:10:53 / 의견마감 2026-12-01 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307167&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00307167&fileType=BFDTL&fileSeq=2
 - [조달청] [SM] 2027~2028년도 디지털연탄쿠폰시스템 유지보수용역 / 번호 R26BD00304895 / 600,839,600원 / 등록 2026-11-23 15:52:29 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304895&fileType=BFDTL&fileSeq=1
-- [조달청] [SM] 2027년 국가재난안전교육원 정보시스템 유지관리 / 번호 R26BD00304318 / 555,947,360원 / 등록 2026-11-20 18:05:36 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304318&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 2027년 제대군인전직지원시스템 유지관리 사업 / 번호 R26BD00304946 / 471,866,800원 / 등록 2026-11-23 16:16:00 / 의견마감 2026-11-26 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304946&fileType=BFDTL&fileSeq=1
 - [조달청] [SI] 등급판정체계 개편 정보시스템 구축 감리 사업 / 번호 R26BD00304637 / 433,935,800원 / 등록 2026-11-23 11:24:31 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304637&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304637&fileType=BFDTL&fileSeq=2
-- [조달청] [SI·SM] 2027년 통합 방호 시스템 운영 및 유지관리 사업 / 번호 R26BD00304045 / 418,967,800원 / 등록 2026-11-20 15:37:31 / 의견마감 2026-11-25 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00304045&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 27년 정보시스템 소프트웨어 유지보수 사업 / 번호 R26BD00306337 / 407,722,470원 / 등록 2026-11-25 13:19:40 / 의견마감 2026-11-30 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00306337&fileType=BFDTL&fileSeq=1
 - [조달청] [SM] 2027년 농약안전정보시스템 유지관리 사업 / 번호 R26BD00305806 / 403,685,000원 / 등록 2026-11-24 16:34:35 / 의견마감 2026-11-29 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305806&fileType=BFDTL&fileSeq=1 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305806&fileType=BFDTL&fileSeq=2
 - [조달청] [SM] AI 기반 서·논술형 평가 평가지원시스템 솔루션 도입 및 운영 용역 / 번호 R26BD00305187 / 393,274,000원 / 등록 2026-11-23 18:38:44 / 의견마감 2026-11-28 23:59:00 / https://www.g2b.go.kr/pn/pnz/pnza/UntyAtchFile/downloadFile.do?bfSpecRegNo=R26BD00305187&fileType=BFDTL&fileSeq=1
@@ -39,22 +39,18 @@
 ## 사전규격 (RFP 초안·규격서) — 공사 (0건)
 - 해당 건 없음
 
-## 낙찰 결과 — 용역 (5건)
+## 낙찰 결과 — 용역 (4건)
 - [한국예탁결제원] [SI] 차세대시스템 2단계 구축 PMO 사업 / 번호 R26BK01742820 / 12,385,000,000원 / 낙찰업체 이와이컨설팅 유한책임회사 / 낙찰률 - / 개찰 2026-11-06 07:44:58
 - [국방부 국방전산정보원] [SI] 국방 차세대 기록관리시스템 전환 사업 / 번호 R26BK01814927 / 11,605,000,000원 / 낙찰업체 주식회사 폴라리스에이아이핸디 / 낙찰률 - / 개찰 2026-11-23 09:42:54
-- [한국국제협력단] [SI] 세네갈 AI 전환 센터 구축을 통한 디지털 역량 강화 사업 PMC 용역 / 번호 R26BK01705373 / 6,731,711,343원 / 낙찰업체 한국생산성본부 / 낙찰률 - / 개찰 2026-10-30 11:14:01
-- [산림청 국립산림과학원] [SI·SM] 27~28년도 국립산림과학원 연구정보시스템 통합 운영 및 유지관리 / 번호 R26BK01778913 / 3,102,000,000원 / 낙찰업체 주식회사코넥 / 낙찰률 - / 개찰 2026-11-18 07:18:05
 - [한국방송통신전파진흥원] [SM] 2026년 KCA 정보시스템 유지관리 및 운영지원 / 번호 R26BK01768036 / 3,000,800,000원 / 낙찰업체 에스엠티정보기술(주) / 낙찰률 - / 개찰 2026-11-11 17:37:41
+- [대전광역시] 사정교~한밭대교 도로개설 기본설계 건설사업관리(설계단계) 용역 / 번호 R26BK01826484 / 191,500,000원 / 낙찰업체 (주)이도엔지니어링 / 낙찰률 88.554 / 개찰 2026-11-18 13:08:03
 
-## 낙찰 결과 — 공사 (1건)
-- [대전광역시] 문평동 93번지 하수관로 긴급정비공사 / 번호 R26BK01838372 / 84,262,336원 / 낙찰업체 주식회사 성주건설 / 낙찰률 90.193 / 개찰 2026-11-24 11:19:42
+## 낙찰 결과 — 공사 (0건)
+- 해당 건 없음
 
-## 계약 체결 — 용역 (2건)
+## 계약 체결 — 용역 (1건)
 - [조달청] 대전광역시 사이버침해대응센터 보안관제 용역(장기계속 2차) / 번호 R26TE20256181 / 1,807,300,000원 / 수요기관 대전광역시 / 체결 2026-11-26 / 업체 주식회사 이글루코퍼레이션 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02472925&ctrtChgOrd=00&prcmBsneSeCd=조070002&srchName=ctrtCrst&openUrl=Y
-- [대전광역시] 대전용운국제수영장 개보수사업 감리(건축, 토목, 기계) 용역 / 번호 R26TE20204974 / 59,184,100원 / 체결 2026-11-25 / 업체 도담건축사사무소 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02465915&ctrtChgOrd=00&prcmBsneSeCd=조070003&srchName=ctrtCrst&openUrl=Y
 
-## 계약 체결 — 공사 (3건)
-- [대전광역시] 대전용운국제수영장 개보수 건축공사 / 번호 R26TE20204710 / 5,192,915,000원 / 체결 2026-11-25 / 업체 주식회사유원건설산업 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02462036&ctrtChgOrd=00&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
-- [대전광역시] 문평동 93번지 하수관로 긴급정비공사 / 번호 R26TE20200655 / 84,262,330원 / 체결 2026-11-25 / 업체 주식회사 성주건설 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02469508&ctrtChgOrd=00&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
-- [대전광역시] 둔산동 근로자종합복지회관 옥상방수공사 / 번호 R26TE20268376 / 15,534,140원 / 체결 2026-11-26 / 업체 주식회사 예운 / http://www.g2b.go.kr / https://www.g2b.go.kr/link/FIUA027_01/single/?ctrtNo=R26TA02343462&ctrtChgOrd=01&prcmBsneSeCd=조070004&srchName=ctrtCrst&openUrl=Y
+## 계약 체결 — 공사 (0건)
+- 해당 건 없음
 
